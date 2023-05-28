@@ -20,7 +20,7 @@ DESPOT := ${CPP_FOLDER}/despot/build
 
 temperaturesampler:
 	mkdir -p ${OUT_DIR} ${MY_JNI_HEADERS}
-	javac -h ${MY_JNI_HEADERS} -d ${OUT_DIR} ${TEMPERATURE_JAVA_FILES} ${AJAN_POMDP_FILES} ${AJAN_POMDP_IMPL_FILES} 
+	javac -h ${MY_JNI_HEADERS} -d ${OUT_DIR} ${TEMPERATURE_JAVA_FILES} ${AJAN_POMDP_FILES} ${AJAN_POMDP_IMPL_FILES}
 	g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} ${CPP_FOLDER}/TigerState.cpp -o ${OUT_DIR}/tigerState.o
 	g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} ${CPP_FOLDER}/TemperatureSampler.cpp -o ${OUT_DIR}/temperatureSampler.o
 	#g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${DESPOT_SRC} -I${DESPOT_CORE} -I${DESPOT_INTERFACE} -I${DESPOT_POMDPX} -I${DESPOT_SOLVER} -I${DESPOT_UTIL} -I${DESPOT_UTIL_TINYXML} -I${MY_JNI_HEADERS} ${CPP_FOLDER}/TigerState.cpp -o ${OUT_DIR}/tigerState.o
