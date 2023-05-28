@@ -1,13 +1,22 @@
 package com.ajan.POMDP;
 
+import com.ajan.POMDP.implementation.AJAN_Agent_State;
+
+import java.util.Vector;
+
 public abstract class DSPOMDP {
-    public abstract boolean Step(State state, double random_num, int action, double reward, int obs);
+
+    public abstract boolean Step(AJAN_Agent_State state, double random_num, int action, double reward, int obs);
+
     public abstract int NumActions();
+
+    public abstract int NumStates();
+
     public abstract double Reward(State state, int action);
-    public abstract double ObsProb(int obs,State state, int action);
+    public abstract double ObsProb(int obs,AJAN_Agent_State state, int action);
 
     public abstract State CreateStartState(String type); // initialize the type to DEFAULT
-    public abstract Belief InitialBelief(State start, String type); // initialize the type to DEFAULT
+    public abstract Vector<State> getInitialBeliefParticles(State start, String type); // initialize the type to DEFAULT
     public abstract double GetMaxReward();
 
     public abstract ValuedAction GetBestAction();
@@ -20,8 +29,8 @@ public abstract class DSPOMDP {
 
     public abstract void PrintBelief(Belief belief);
 
-    public abstract State Copy(State state);
-    public abstract int NumActiveParticles();
+//    public abstract State Copy(State state);
+//    public abstract int NumActiveParticles();
 
 }
 

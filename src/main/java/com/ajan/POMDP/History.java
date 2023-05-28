@@ -1,5 +1,8 @@
 package com.ajan.POMDP;
 
-public class History {
+import java.util.Vector;
 
+public class History {
+    Vector<Integer> actions_;
+    Vector<Integer> observations_;
 }

@@ -12,6 +12,11 @@ import java.util.Vector;
 
 
 public class AJAN_Agent extends DSPOMDP {
+
+    static AJAN_Agent_State currentState;
+    static double currentReward;
+    static int currentObservation;
+    static int currentAction;
     final int LEFT = 0;
     final int RIGHT = 1;
     final int HOVER = 2;
@@ -19,75 +24,99 @@ public class AJAN_Agent extends DSPOMDP {
 //     private final Logger LOGGER = LoggerFactory.getLogger(AJAN_Agent.class);
 
     public AJAN_Agent() {
+        currentState = new AJAN_Agent_State(-1, 0.5); // Check for memory management here
 //        InitializeObject(this);
     }
     @Override
-    public boolean Step(State state, double random_num, int action, double reward, int obs) {
-        AJAN_Agent_State agentState = (AJAN_Agent_State) state;
+    public boolean Step(AJAN_Agent_State state, double random_num, int action, double reward, int obs) {
+        currentState = state;
+        currentAction = action;
         boolean terminal = false;
-        if (action == LEFT || action == RIGHT) {
-            reward = agentState.agent_position != action ? 10 : -100;
-            agentState.agent_position = random_num <= 0.5 ? LEFT : RIGHT;
-            obs = 2;
+        // region LOGIC here
+        //TODO: Implementation can be in Knowledge Graphs
+        if (currentAction == LEFT || currentAction == RIGHT) {
+            currentReward = currentState.agent_position != currentAction ? 10 : -100;
+            currentState.agent_position = random_num <= 0.5 ? LEFT : RIGHT;
+            currentObservation = 2;
         } else {
-            reward = -1;
+            currentReward = -1;
             if (random_num <= 1 - NOISE)
-                obs = agentState.agent_position;
+                currentObservation = currentState.agent_position;
             else
-                obs = (LEFT + RIGHT - agentState.agent_position);
+                currentObservation = (LEFT + RIGHT - currentState.agent_position);
         }
+        //endregion
         return terminal;
     }
 
     @Override
     public int NumActions() {
+        // TODO: KB Implementation
         return 3;
     }
+    @Override
+    public int NumStates() {
+        // TODO: KB Implementation
+        return 2;}
 
     @Override
     public double Reward(State state, int action) {
+        // TODO: KB Implementation
         return 0;
     }
 
     @Override
-    public double ObsProb(int obs, State state, int action) {
-        AJAN_Agent_State agentState = (AJAN_Agent_State) state; // typecast the state to agent state
+    public double ObsProb(int obs, AJAN_Agent_State state, int action) {
+        // TODO: Implementation needed in Knowledge Graphs
+        currentState = state;
+        currentAction = action;
+        currentObservation = obs;
         // check for the observation made
-        if(action !=HOVER)
+        if(currentAction !=HOVER)
             // return the
-            return obs == 2 ? 1 : 0;
-        return agentState.agent_position == obs ? (1-NOISE): NOISE;
+            return currentObservation == 2 ? 1 : 0;
+        return currentState.agent_position == currentObservation ? (1-NOISE): NOISE;
     }
 
     @Override
     public State CreateStartState(String type) {
+        // TODO: This also can be implemented in KB
         AJAN_Agent_State agentState = new AJAN_Agent_State(-1,0.5);
         agentState.agent_position = new Random().nextInt(2);
         return agentState;
     }
 
     @Override
-    public Belief InitialBelief(State start, String type) {
-        return null;
-    }
-
-    public Vector<State> GetInitialBeliefParticles(State start, String type){
+    public Vector<State> getInitialBeliefParticles(State start, String type) {
         Vector<State> particles = new Vector<>();
-        AJAN_Agent_State left = new AJAN_Agent_State(-1,0.5);
+
+        AJAN_Agent_State left = new AJAN_Agent_State(-1, 0.5);
+        left.agent_position = LEFT;
         particles.add(left);
         AJAN_Agent_State right = new AJAN_Agent_State(-1, 0.5);
+        right.agent_position = RIGHT;
         particles.add(right);
+
         return particles;
     }
 
+//    public Vector<State> GetInitialBeliefParticles(State start, String type){
+//        Vector<State> particles = new Vector<>();
+//        AJAN_Agent_State left = new AJAN_Agent_State(-1,0.5);
+//        particles.add(left);
+//        AJAN_Agent_State right = new AJAN_Agent_State(-1, 0.5);
+//        particles.add(right);
+//        return particles;
+//    }
+
     @Override
     public double GetMaxReward() {
-        return 0;
+        return 10;
     }
 
     @Override
     public ValuedAction GetBestAction() {
-        return null;
+        return new ValuedAction(HOVER, -1);
     }
 
     @Override
@@ -106,6 +135,14 @@ public class AJAN_Agent extends DSPOMDP {
     @Override
     public void PrintAction(int action) {
 
+        if(action == LEFT) {
+            System.out.println("Fly Left");
+        } else if (action == RIGHT) {
+            System.out.println("Fly Right");
+        } else {
+            System.out.println("Listen");
+        }
+
     }
 
     @Override
@@ -113,18 +150,31 @@ public class AJAN_Agent extends DSPOMDP {
 
     }
 
-    @Override
-    public State Copy(State state) {
-        return null;
-    }
-
-    @Override
-    public int NumActiveParticles() {
-        return 0;
-    }
+//    @Override
+//    public State Copy(State state) {
+//        return null;
+//    }
+//
+//    @Override
+//    public int NumActiveParticles() {
+//        return 0;
+//    }
 
     public String CreateScenarioLowerBound(String name, String particle_bound_name){
         return "DEFAULT";
+    }
+
+//    public void InitializeParameters(AJAN_Agent_State state,double random_num,int action,double reward,int obs){
+//        System.out.println("Setting Agent Parameters");
+//        currentState = state;
+//        currentReward = reward;
+//        currentAction = action;
+//        currentObservation = obs;
+//    }
+
+    public AJAN_Agent getParameters(){
+        System.out.println("Returning Agent Parameters");
+        return this;
     }
 
 //    private native void InitializeObject(AJAN_Agent agent);
