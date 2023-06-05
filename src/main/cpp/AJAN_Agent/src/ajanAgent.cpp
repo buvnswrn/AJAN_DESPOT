@@ -46,10 +46,6 @@ namespace despot {
     AJANAgent::AJANAgent(JNIEnv * env,jobject* agentObject) {
         AJANAgent::javaEnv = env;
         AJANAgent::javaAgentObject = AJANAgent::javaEnv->NewGlobalRef(*agentObject);
-        cout<<AJANAgent::javaEnv->GetVersion()<<endl;
-        jclass javaClass = AJANAgent::javaEnv->GetObjectClass(javaAgentObject);
-        jmethodID javaMethod = AJANAgent::javaEnv->GetMethodID(javaClass,"PrintMethod","()V");
-        AJANAgent::javaEnv->CallVoidMethod(javaAgentObject,javaMethod);
     }
     bool AJANAgent::Step(despot::State &s, double random_num, despot::ACT_TYPE action, double &reward,
                          despot::OBS_TYPE &obs) const {
@@ -73,20 +69,11 @@ namespace despot {
     }
 
     State *AJANAgent::CreateStartState(std::string type) const {
-        return getAJANStateState(type);
+        return getAJANStartState(type);
     }
 
     Belief *AJANAgent::InitialBelief(const State *start, std::string type) const {
-        // TODO: Replace this with Java Call
-//        cout<<"Initial Belief"<<endl;
-        vector<State*> particles;
-        AJANAgentState* left = static_cast<AJANAgentState*>(Allocate(-1, 0.5));
-        left->agent_position = LEFT;
-        particles.push_back(left);
-        AJANAgentState* right = static_cast<AJANAgentState*>(Allocate(-1, 0.5));
-        right->agent_position = RIGHT;
-        particles.push_back(right);
-        return new ParticleBelief(particles, this);
+        return new ParticleBelief(getAJANParticles(start,type),this);
     }
 
     double AJANAgent::GetMaxReward() const {
@@ -223,25 +210,37 @@ namespace despot {
         jdouble value = javaEnv->GetDoubleField(valuedAction, valueField);
         return ValuedAction(action,value);
     }
-    AJANAgentState *AJANAgent::getAJANStateState(std::string type) const {
-        cout<<"Publishing state:"<<endl;
+    AJANAgentState *AJANAgent::getAJANStartState(std::string type) const {
         jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
         std::string ty = "testing";
         jstring typeString = javaEnv->NewStringUTF(ty.c_str());
         jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"CreateStartState",
                                         "(Ljava/lang/String;)Lcom/ajan/POMDP/implementation/AJAN_Agent_State;");
         jobject valuedAction = javaEnv->CallObjectMethod(javaAgentObject,javaMethod,typeString);
-        jclass valuedActionClass = javaEnv->GetObjectClass(valuedAction);
-        jfieldID weightField = javaEnv->GetFieldID(valuedActionClass, "weight", "D");
-        jfieldID stateField = javaEnv->GetFieldID(valuedActionClass, "state_id", "I");
-        jfieldID scenarioField = javaEnv->GetFieldID(valuedActionClass, "scenario_id", "I");
-        jfieldID agentPositionField = javaEnv->GetFieldID(valuedActionClass, "agent_position", "I");
-        AJANAgentState *ajanAgentState = new AJANAgentState();
-        ajanAgentState->agent_position = javaEnv->GetIntField(valuedAction, agentPositionField);
-        ajanAgentState->state_id = javaEnv->GetIntField(valuedAction, stateField);
-        ajanAgentState->scenario_id = javaEnv->GetIntField(valuedAction, scenarioField);
-        ajanAgentState->weight = javaEnv->GetDoubleField(valuedAction, weightField);
+        AJANAgentState *ajanAgentState = getAgentStateFromAJANState(valuedAction, false);
         return ajanAgentState;
+    }
+
+    std::vector<State *> AJANAgent::getAJANParticles(const State *pState, std::string type) const {
+        vector<State*> particles;
+        std::string ty = "testing";
+        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
+        jobject state = getAJANStateFromState(pState);
+        jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"getInitialBeliefParticles","(Lcom/ajan/POMDP/State;Ljava/lang/String;)Ljava/util/Vector;");
+        jobject particleVector = javaEnv->CallObjectMethod(javaAgentObject, javaMethod,state,state,javaEnv->NewStringUTF(ty.c_str()));
+        cout<<"Fetched vector"<<endl;
+        jclass javaVectorClass = javaEnv->GetObjectClass(particleVector);
+        jmethodID javaVectorSizeMethod = javaEnv->GetMethodID (javaVectorClass, "size", "()I");
+        jmethodID javaVectorGetMethod  = javaEnv->GetMethodID(javaVectorClass, "get",
+                                                              "(I)Ljava/lang/Object;");
+        jint size = javaEnv->CallIntMethod(particleVector,javaVectorSizeMethod);
+        cout<<"Got "<<size<<" particles"<<endl;
+        for (int i = 0; i < size; ++i) {
+            jobject agentState = javaEnv->CallObjectMethod(particleVector,javaVectorGetMethod,i);
+            cout<<"Fetching particle "<<i<<endl;
+            particles.push_back(getAgentStateFromAJANState(agentState, true));
+        }
+        return particles;
     }
     //endregion
     //region Helpers
@@ -313,6 +312,40 @@ namespace despot {
         ajanAgentState.agent_position = ajanAgentPosition;
 //        cout<<"c_agent_position:"<<ajanAgentState.agent_position<<" ";
     }
+    jobject AJANAgent::getAJANStateFromState(const State *state) const{
+
+//    int state = getAJANStateFromState();
+        jclass ajanStateClass = javaEnv ->FindClass("com/ajan/POMDP/implementation/AJAN_Agent_State");
+        jobject ajanState = javaEnv->AllocObject(ajanStateClass);
+        jfieldID state_id = javaEnv->GetFieldID(ajanStateClass, "state_id","I");
+        jfieldID scenario_id = javaEnv->GetFieldID(ajanStateClass, "scenario_id","I");
+        jfieldID weight = javaEnv->GetFieldID(ajanStateClass, "weight","D");
+        javaEnv->SetIntField(ajanState, state_id, state->state_id);
+        javaEnv->SetIntField(ajanState, scenario_id, state->scenario_id);
+        javaEnv->SetDoubleField(ajanState, weight, state->weight);
+        return ajanState;
+    }
+    AJANAgentState *AJANAgent::getAgentStateFromAJANState(jobject valuedAction, bool needAllocation) const {
+        jclass valuedActionClass = javaEnv->GetObjectClass(valuedAction);
+        jfieldID weightField = javaEnv->GetFieldID(valuedActionClass, "weight", "D");
+        jfieldID stateField = javaEnv->GetFieldID(valuedActionClass, "state_id", "I");
+        jfieldID scenarioField = javaEnv->GetFieldID(valuedActionClass, "scenario_id", "I");
+        jfieldID agentPositionField = javaEnv->GetFieldID(valuedActionClass, "agent_position", "I");
+        AJANAgentState *ajanAgentState;
+        if (needAllocation){
+            ajanAgentState = static_cast<AJANAgentState *>(Allocate(javaEnv->GetIntField(valuedAction, stateField),
+                                                                     javaEnv->GetDoubleField(valuedAction,
+                                                                                             weightField)));
+        } else {
+            ajanAgentState = new AJANAgentState();
+            ajanAgentState->weight = javaEnv->GetDoubleField(valuedAction, weightField);
+            ajanAgentState->state_id = javaEnv->GetIntField(valuedAction, stateField);
+        }
+        ajanAgentState->agent_position = javaEnv->GetIntField(valuedAction, agentPositionField);
+        ajanAgentState->scenario_id = javaEnv->GetIntField(valuedAction, scenarioField);
+        return ajanAgentState;
+    }
+
     //endregion
     //endregion
 };

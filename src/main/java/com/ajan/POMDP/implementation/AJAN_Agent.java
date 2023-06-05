@@ -91,9 +91,9 @@ public class AJAN_Agent extends DSPOMDP {
     }
 
     @Override
-    public Vector<State> getInitialBeliefParticles(State start, String type) {
-        Vector<State> particles = new Vector<>();
-
+    public Vector<AJAN_Agent_State> getInitialBeliefParticles(State start, String type) {
+        System.out.println("Got call to initial belief");
+        Vector<AJAN_Agent_State> particles = new Vector<>();
         AJAN_Agent_State left = new AJAN_Agent_State(-1, 0.5);
         left.agent_position = LEFT;
         particles.add(left);

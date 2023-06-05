@@ -80,7 +80,13 @@ namespace despot {
 
         ValuedAction getAJANBestAction() const;
 
-        AJANAgentState *getAJANStateState(std::string type) const;
+        AJANAgentState *getAJANStartState(std::string type) const;
+
+        std::vector<State *> getAJANParticles(const State *pState, std::string type) const;
+
+        jobject getAJANStateFromState(const State *state) const;
+
+        AJANAgentState *getAgentStateFromAJANState(jobject valuedAction, bool needAllocation) const;
     };
 }
 

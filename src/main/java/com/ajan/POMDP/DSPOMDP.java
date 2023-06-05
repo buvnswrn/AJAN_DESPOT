@@ -16,7 +16,7 @@ public abstract class DSPOMDP {
     public abstract double ObsProb(int obs,AJAN_Agent_State state, int action);
 
     public abstract State CreateStartState(String type); // initialize the type to DEFAULT
-    public abstract Vector<State> getInitialBeliefParticles(State start, String type); // initialize the type to DEFAULT
+    public abstract Vector<AJAN_Agent_State> getInitialBeliefParticles(State start, String type); // initialize the type to DEFAULT
     public abstract double GetMaxReward();
 
     public abstract ValuedAction GetBestAction();
