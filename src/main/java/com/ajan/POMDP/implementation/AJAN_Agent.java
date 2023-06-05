@@ -29,22 +29,42 @@ public class AJAN_Agent extends DSPOMDP {
     }
     @Override
     public boolean Step(AJAN_Agent_State state, double random_num, int action, double reward, int obs) {
-        currentState = state;
+        // TODO: Implement this in Knowledge Graphs -  Execute the Transition Function here. Out: AgentInfo,reward,obs
+//        System.out.println("r_c_agent_position:{"+state.agent_position+"},action:{"+action+"},obs:{"+obs+"},reward:{"+reward+"}");
+        currentState.state_id = state.state_id;
+        currentState.scenario_id = state.scenario_id;
+        currentState.agent_position = state.agent_position;
+        currentState.weight = state.weight;
         currentAction = action;
         boolean terminal = false;
+//        System.out.println("Executing Step");
         // region LOGIC here
         //TODO: Implementation can be in Knowledge Graphs
-        if (currentAction == LEFT || currentAction == RIGHT) {
-            currentReward = currentState.agent_position != currentAction ? 10 : -100;
+        if (action == LEFT || action == RIGHT) {
+//            if(currentState.agent_position != currentAction){
+//                currentReward = 10;
+//            } else {
+//                currentReward = -100;
+////                System.out.println("Equal agent position...............");
+//            }
+            currentReward = state.agent_position != currentAction ? 10 : -100;
             currentState.agent_position = random_num <= 0.5 ? LEFT : RIGHT;
+//            if(random_num<=0.5){
+//                currentState.agent_position = LEFT;
+//            } else {
+//                currentState.agent_position = RIGHT;
+//            }
             currentObservation = 2;
+//            System.out.println("Entered in LEFT || RIGHT");
         } else {
             currentReward = -1;
-            if (random_num <= 1 - NOISE)
+//            System.out.println("Hovering the lane.......");
+            if (random_num <= (1 - NOISE))
                 currentObservation = currentState.agent_position;
             else
                 currentObservation = (LEFT + RIGHT - currentState.agent_position);
         }
+//        System.out.println("j_agent_position:{"+currentState.agent_position+"},obs:{"+currentObservation+"},reward:{"+currentReward+"}");
         //endregion
         return terminal;
     }
@@ -67,7 +87,7 @@ public class AJAN_Agent extends DSPOMDP {
 
     @Override
     public double ObsProb(int obs, AJAN_Agent_State state, int action) {
-        // TODO: Implementation needed in Knowledge Graphs
+        // TODO: Implementation needed in Knowledge Graphs - Execute the Observation Probability query here. Out: AgentInfo,reward,obs
         currentState = state;
         currentAction = action;
         currentObservation = obs;
@@ -176,6 +196,8 @@ public class AJAN_Agent extends DSPOMDP {
         System.out.println("Returning Agent Parameters");
         return this;
     }
+
+    public void PrintMethod() {System.out.println("Received a call");}
 
 //    private native void InitializeObject(AJAN_Agent agent);
 }

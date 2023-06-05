@@ -80,20 +80,20 @@ JNIEXPORT void JNICALL Java_com_jni_example_TemperatureSampler_InitializeObject
         (JNIEnv * env, jobject thisObject, jobject stateObject){
     thisClassObject = thisObject;
 }
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
-    JNIEnv* env;
-    if(vm->GetEnv(reinterpret_cast<void**>(&env),JNI_VERSION_1_6)!=JNI_OK){
-        std::cout<<"Initializing global"<<std::endl;
-        return JNI_ERR;
-    }
-    std::cout<<"Initializing global Env variable"<<std::endl;
-    globalEnv = env;
-//    jclass javaClass = globalEnv->FindClass("com/jni/example/TemperatureSampler");
-//    jmethodID javaMethod = globalEnv->GetMethodID(javaClass,"getMessageString","()Ljava/lang/String;");
-//    jstring preferredScale = static_cast<jstring>(env->CallObjectMethod(javaClass,javaMethod));
-//    std::cout<<"Got Preferred Scale:"<<preferredScale<<std::endl;
-    return JNI_VERSION_1_6;
-}
+//JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
+//    JNIEnv* env;
+//    if(vm->GetEnv(reinterpret_cast<void**>(&env),JNI_VERSION_1_6)!=JNI_OK){
+//        std::cout<<"Initializing global"<<std::endl;
+//        return JNI_ERR;
+//    }
+//    std::cout<<"Initializing global Env variable"<<std::endl;
+//    globalEnv = env;
+////    jclass javaClass = globalEnv->FindClass("com/jni/example/TemperatureSampler");
+////    jmethodID javaMethod = globalEnv->GetMethodID(javaClass,"getMessageString","()Ljava/lang/String;");
+////    jstring preferredScale = static_cast<jstring>(env->CallObjectMethod(javaClass,javaMethod));
+////    std::cout<<"Got Preferred Scale:"<<preferredScale<<std::endl;
+//    return JNI_VERSION_1_6;
+//}
 
 
 

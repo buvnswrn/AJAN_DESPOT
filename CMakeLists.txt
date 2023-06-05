@@ -35,4 +35,4 @@ add_executable(pomdp
         ${DESPOT_POMDPX}
         ${DESPOT_SOLVER}
         ${DESPOT_UTIL}
-        ${DESPOT_UTIL_TINYXML} src/main/cpp/TigerState.cpp src/main/cpp/TigerState.h)
+        ${DESPOT_UTIL_TINYXML} src/main/cpp/TigerState.cpp src/main/cpp/TigerState.h src/main/cpp/AJAN_Agent/src/ajanPlanner.cpp src/main/cpp/AJAN_Agent/src/ajanAgent.cpp)

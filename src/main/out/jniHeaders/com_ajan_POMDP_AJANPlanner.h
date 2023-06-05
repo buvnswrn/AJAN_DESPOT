@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     com_ajan_POMDP_AJANPlanner
  * Method:    RunPlanner
- * Signature: ()I
+ * Signature: (Lcom/ajan/POMDP/implementation/AJAN_Agent;)I
  */
 JNIEXPORT jint JNICALL Java_com_ajan_POMDP_AJANPlanner_RunPlanner
-  (JNIEnv *, jobject);
+  (JNIEnv *, jobject, jobject);
 
 /*
  * Class:     com_ajan_POMDP_AJANPlanner

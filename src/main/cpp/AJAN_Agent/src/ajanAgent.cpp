@@ -14,62 +14,82 @@
 using namespace std;
 namespace despot {
 
-    //region JNI Bridge
-    JNIEnv* javaEnv;
-    jobject javaAgentObject;
-    jobject javaStateObject;
 
-    JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
-        JNIEnv* env;
-        if(vm->GetEnv(reinterpret_cast<void**>(&env),JNI_VERSION_1_6)!=JNI_OK){
-            std::cout<<"Initializing global"<<std::endl;
-            return JNI_ERR;
-        }
-        std::cout<<"Initializing global Env variable"<<std::endl;
-        javaEnv = env;
-        return JNI_VERSION_1_6;
-    }
-    //endregion
+    const ACT_TYPE AJANAgent::LEFT = 0;
+    const ACT_TYPE AJANAgent::RIGHT = 1;
+    const ACT_TYPE AJANAgent::HOVER = 2;
+    const double AJANAgent::NOISE = 0.15;
+
     //region AJANAgentState Functions
     AJANAgentState::AJANAgentState() {
         // this method will fail
     }
-    AJANAgentState::AJANAgentState(int _state_id) {
-        state_id = _state_id;
+    AJANAgentState::AJANAgentState(int _state_id):
+//        state_id = _state_id;
+        agent_position(_state_id){}
         // this method will fail
+
+    AJANAgentState::AJANAgentState(JNIEnv * env, jobject stateObject) {
+        AJANAgentState::javaEnv = env;
+        AJANAgentState::javaStateObject = stateObject;
     }
 
-    AJANAgentState::AJANAgentState(jobject stateObject) {
-        javaStateObject = stateObject;
-    }
-
-    string AJANAgentState::text() {
+    string AJANAgentState::text() const {
         // Do Java call here
-        return "s" + to_string(state_id);
+//        return "s" + to_string(state_id);
+        return agent_position == AJANAgent::LEFT ? "LEFT" : "RIGHT";
     }
+
     //endregion
     //region AJANAgent Functions
     AJANAgent::AJANAgent(){}
-    AJANAgent::AJANAgent(JNIEnv* env,jobject agentObject) {
-        javaEnv = env;
-        javaAgentObject = agentObject;
-        cout<<"Initialized AJAN Agent in DESPOT" <<endl;
+    AJANAgent::AJANAgent(JNIEnv * env,jobject* agentObject) {
+//        cout<<"Initializing AJAN Agent"<<endl;
+        AJANAgent::javaEnv = env;
+        AJANAgent::javaAgentObject = AJANAgent::javaEnv->NewGlobalRef(*agentObject);
+//        cout<< "Getting Version"<<endl;
+        cout<<AJANAgent::javaEnv->GetVersion()<<endl;
+//        cout<<"Getting class"<<endl;
+        jclass javaClass = AJANAgent::javaEnv->GetObjectClass(javaAgentObject);
+//        cout<<"Getting method"<<endl;
+        jmethodID javaMethod = AJANAgent::javaEnv->GetMethodID(javaClass,"PrintMethod","()V");
+//        cout<<"Invoking Method"<<endl;
+        AJANAgent::javaEnv->CallVoidMethod(javaAgentObject,javaMethod);
+//        cout<<"Initialized AJAN Agent in DESPOT" <<endl;
     }
     bool AJANAgent::Step(despot::State &s, double random_num, despot::ACT_TYPE action, double &reward,
                          despot::OBS_TYPE &obs) const {
         bool terminal = false;
+            //        cout<<"Running Step"<<endl;
         //region Java Step call here
-            bool returnValue = AJANAgent::getAJANStep(s,random_num,action,reward,obs,
+        AJANAgentState& ajanAgentState = static_cast<AJANAgentState&>(s);
+        bool returnValue = AJANAgent::getAJANStep(ajanAgentState,random_num,action,reward,obs,
                     "Step","(Lcom/ajan/POMDP/implementation/AJAN_Agent_State;DIDI)Z");
         // TODO: Get values of State, action, reward, obs from AJAN
-            UpdateValues(s, reward, obs);
+
+            UpdateValues(ajanAgentState, reward, obs);
+//            cout<<"agent position:"<<ajanAgentState.agent_position<<" ";
+//            cout<<"obs:"<<obs<<" ";
+//            cout<<"reward:"<<reward<<" "<<endl;
         //endregion
-        return terminal;
+        return returnValue;
+//        if (action == LEFT || action == RIGHT) {
+//            reward = ajanAgentState.agent_position != action ? 10 : -100;
+//            ajanAgentState.agent_position = random_num <= 0.5 ? LEFT : RIGHT;
+//            obs = 2;
+//        } else {
+//            reward = -1;
+//            if(random_num <=1 - NOISE)
+//                obs = ajanAgentState.agent_position;
+//            else
+//                obs = (LEFT + RIGHT - ajanAgentState.agent_position);
+//        }
+//        return terminal;
     }
 
     int AJANAgent::NumActions() const{
         // TODO: Change the function to Communicate with Java
-        return 10;
+        return 3;
     }
     int AJANAgent::NumStates() const {
         return 2;
@@ -86,11 +106,12 @@ namespace despot {
     }
 
     State *AJANAgent::CreateStartState(std::string type) const {
-        return DSPOMDP::CreateStartState(type);
+        return new AJANAgentState(Random::RANDOM.NextInt(2));
     }
 
     Belief *AJANAgent::InitialBelief(const State *start, std::string type) const {
         // TODO: Replace this with Java Call
+//        cout<<"Initial Belief"<<endl;
         vector<State*> particles;
         AJANAgentState* left = static_cast<AJANAgentState*>(Allocate(-1, 0.5));
         left->agent_position = LEFT;
@@ -106,7 +127,7 @@ namespace despot {
     }
 
     ValuedAction AJANAgent::GetBestAction() const {
-        return ValuedAction();
+        return ValuedAction(HOVER,-1);
     }
 
     ScenarioLowerBound *AJANAgent::CreateScenarioLowerBound(std::string name, std::string particle_bound_name) const {
@@ -117,13 +138,13 @@ namespace despot {
             bound = new RandomPolicy(this,
                                      CreateParticleLowerBound(particle_bound_name));
         } else if (name == "LEFT") {
-            bound = new BlindPolicy(this, LEFT,
+            bound = new BlindPolicy(this, AJANAgent::LEFT,
                                     CreateParticleLowerBound(particle_bound_name));
         } else if (name == "RIGHT") {
-            bound = new BlindPolicy(this, RIGHT,
+            bound = new BlindPolicy(this, AJANAgent::RIGHT,
                                     CreateParticleLowerBound(particle_bound_name));
         } else if (name == "LISTEN") {
-            bound = new BlindPolicy(this, HOVER,
+            bound = new BlindPolicy(this, AJANAgent::HOVER,
                                     CreateParticleLowerBound(particle_bound_name));
         } else {
             cerr << "Unsupported scenario lower bound: " << name << endl;
@@ -134,24 +155,38 @@ namespace despot {
 
     //region Print Functions
     void AJANAgent::PrintState(const State &state, ostream &out) const {
-        jobject agentState = convertToAJANAgentState(state);
-        printInJava("PrintState","(Lcom/ajan/POMDP/implementation/AJAN_Agent_State;)V",
-                    agentState);
+//        jobject agentState = convertToAJANAgentState(state);
+//        printInJava("PrintState","(Lcom/ajan/POMDP/implementation/AJAN_Agent_State;)V",
+//                    agentState);
+//        cout<<"Printing State"<<endl;
+        const AJANAgentState& droneState = static_cast<const AJANAgentState&>(state);
+        out << droneState.text() << endl;
     }
 
     void AJANAgent::PrintBelief(const Belief &belief, ostream &out) const {
-
+//        cout<<"Printing Belief"<<endl;
     }
 
     void AJANAgent::PrintObs(const State &state, OBS_TYPE obs, ostream &out) const {
-        jobject agentState = convertToAJANAgentState(state);
-        printInJava("PrintState","(Lcom/ajan/POMDP/implementation/AJAN_Agent_State;I)V",
-                    agentState,obs);
+//        cout<<"Printing Obs"<<endl;
+        out << (obs == LEFT ? "LEFT" : "RIGHT")<< endl;
+        const AJANAgentState& droneState = static_cast<const AJANAgentState&>(state);
+        jobject agentState = convertToAJANAgentState(droneState);
+//        printInJava("PrintState","(Lcom/ajan/POMDP/implementation/AJAN_Agent_State;I)V",
+//                    agentState,obs);
     }
 
     void AJANAgent::PrintAction(ACT_TYPE action, ostream &out) const {
-        printInJava("PrintState","(I)V",
-                    action);
+//        cout<<"Printing Action"<<endl;
+        if(action == LEFT){
+            out << "Fly Left" << endl;
+        } else if (action == RIGHT) {
+            out << "Fly right" << endl;
+        } else {
+            out << "Hover" << endl;
+        }
+//        printInJava("PrintAction","(I)V",
+//                    action);
     }
     //endregion
     //region Memory Functions
@@ -179,26 +214,37 @@ namespace despot {
     //endregion
     //endregion
     //region Helper Functions
-    bool AJANAgent::getAJANStep(despot::State &s, double random_num, despot::ACT_TYPE action, double &reward,
+    bool AJANAgent::getAJANStep(despot::AJANAgentState &s, double random_num, despot::ACT_TYPE action, double &reward,
                      despot::OBS_TYPE &obs,const char *methodName, const char *returnType) const{
+//        cout << "Getting AJAN Step"<<endl;
         jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
+//        cout<<"fetched the class type"<<endl;
         jmethodID javaMethod = javaEnv->GetMethodID(javaClass, methodName, returnType);
         jobject state = convertToAJANAgentState(s);
         jboolean stepExecuted = javaEnv->CallBooleanMethod(javaAgentObject, javaMethod,
                                                            state, random_num,action,reward, obs);
+//        cout << "Method Execute Complete"<<endl;
         return stepExecuted == JNI_TRUE;
     }
 
-    jobject AJANAgent::convertToAJANAgentState(const State &state) const {
+    jobject AJANAgent::convertToAJANAgentState(const AJANAgentState &state) const {
+//        std::cout<<"Converting AJAN State to State" <<std::endl;
 //    int state = getAJANStateFromState();
-            jclass ajanStateClass = javaEnv ->FindClass("com/ajan/POMDP/implementation/AJAN_Agent_State");
-            jobject ajanState = javaEnv->AllocObject(ajanStateClass);
+        jclass ajanStateClass = javaEnv ->FindClass("com/ajan/POMDP/implementation/AJAN_Agent_State");
+//        cout<<"      "<<endl;
+        jobject ajanState = javaEnv->AllocObject(ajanStateClass);
+//            cout<<"Getting Field ID:state_id"<<endl;
             jfieldID state_id = javaEnv->GetFieldID(ajanStateClass, "state_id","I");
+//            cout<<"Getting Field ID:scenario_id"<<endl;
             jfieldID scenario_id = javaEnv->GetFieldID(ajanStateClass, "scenario_id","I");
+//            cout<<"Getting Field ID:weight"<<endl;
             jfieldID weight = javaEnv->GetFieldID(ajanStateClass, "weight","D");
+            jfieldID agent_position = javaEnv->GetFieldID(ajanStateClass, "agent_position", "I");
+//            cout<<"Setting Field IDs"<<endl;
             javaEnv->SetIntField(ajanState, state_id, state.state_id);
             javaEnv->SetIntField(ajanState, scenario_id, state.scenario_id);
             javaEnv->SetDoubleField(ajanState, weight, state.weight);
+            javaEnv->SetIntField(ajanState, agent_position, state.agent_position);
             return ajanState;
     }
 
@@ -218,28 +264,37 @@ namespace despot {
         javaEnv->CallVoidMethod(javaAgentObject, javaMethod, pJobject);
     }
 
-    void AJANAgent::UpdateValues(State &state, double &reward, OBS_TYPE &obs) const {
+    void AJANAgent::UpdateValues(AJANAgentState &state, double &reward, OBS_TYPE &obs) const {
+//        cout<<"Getting the class"<<endl;
         jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
+//        cout<<"Getting currentState"<<endl;
         jfieldID currentStateID = javaEnv->GetStaticFieldID(javaClass, "currentState",
                                                             "Lcom/ajan/POMDP/implementation/AJAN_Agent_State;");
         jobject currentState = javaEnv->GetStaticObjectField(javaClass,currentStateID);
+//        cout<<"Getting the currentReward"<<endl;
         jfieldID currentRewardID = javaEnv->GetStaticFieldID(javaClass, "currentReward", "D");
         jdouble currentReward = javaEnv->GetStaticDoubleField(javaClass, currentRewardID);
+//        cout<<"Getting the currentObservation"<<endl;
         jfieldID currentObservationID = javaEnv->GetStaticFieldID(javaClass, "currentObservation", "I");
-        jint currentObservation = javaEnv->GetIntField(javaClass,currentObservationID);
+        jint currentObservation = javaEnv->GetStaticIntField(javaClass,currentObservationID);
+//        cout<<"Typecasting them"<<endl;
 //        jfieldID currentAction = javaEnv->GetStaticFieldID(javaClass, "currentAction", "I");
-        reward = static_cast<double>(currentReward);
-        obs = static_cast<OBS_TYPE>(currentObservation);
+        reward = currentReward;
+//        cout<<"Typecasting them"<<endl;
+        obs = currentObservation;
         UpdateStateValues(state,currentState);
     }
 
-    void AJANAgent::UpdateStateValues(State &s, jobject pJobject) const {
+    void AJANAgent::UpdateStateValues(AJANAgentState &ajanAgentState, jobject pJobject) const {
+//        cout<<"Updating the state values";
         jclass javaClass = javaEnv->GetObjectClass(pJobject);
+//        cout<<"getting agent_position";
         jfieldID ajanAgentStateID = javaEnv->GetFieldID(javaClass,"agent_position","I");
         jint ajanAgentPosition = javaEnv->GetIntField(pJobject,ajanAgentStateID);
-        AJANAgentState& ajanAgentState = static_cast<AJANAgentState&>(s);
+//        cout<<"typecasting agent_position";
         ajanAgentState.agent_position = ajanAgentPosition;
+//        cout<<"c_agent_position:"<<ajanAgentState.agent_position<<" ";
     }
 
-
+    //endregion
 };

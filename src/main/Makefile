@@ -17,6 +17,7 @@ DESPOT_SOLVER:= ${DESPOT}/solver
 DESPOT_UTIL:= ${DESPOT}/util
 DESPOT_UTIL_TINYXML:= ${DESPOT}/util/tinyxml
 DESPOT := ${CPP_FOLDER}/despot/build
+AJAN_Agent := ${CPP_FOLDER}/AJAN_Agent/src
 
 temperaturesampler:
 	mkdir -p ${OUT_DIR} ${MY_JNI_HEADERS}
@@ -27,8 +28,20 @@ temperaturesampler:
 	#g++ -shared -fPIC -o ${OUT_DIR}/libtemperaturesampler.so ${OUT_DIR}/temperatureSampler.o ${OUT_DIR}/tigerState.o -lc
 	g++ -shared -fPIC  ${DESPOT}/*.o ${OUT_DIR}/tigerState.o  ${OUT_DIR}/temperatureSampler.o -o ${OUT_DIR}/libtemperaturesampler.so -lc
 
-run_temperaturesampler: temperaturesampler
+AJANPlanner:
+	mkdir -p ${OUT_DIR} ${MY_JNI_HEADERS}
+	javac -h ${MY_JNI_HEADERS} -d ${OUT_DIR} ${TEMPERATURE_JAVA_FILES} ${AJAN_POMDP_FILES} ${AJAN_POMDP_IMPL_FILES}
+	g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} -I${DESPOT} ${AJAN_Agent}/ajanAgent.cpp -o ${OUT_DIR}/ajanAgent.o
+	g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} -I${DESPOT} ${AJAN_Agent}/ajanPlanner.cpp -o ${OUT_DIR}/ajanPlanner.o
+	#g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${DESPOT_SRC} -I${DESPOT_CORE} -I${DESPOT_INTERFACE} -I${DESPOT_POMDPX} -I${DESPOT_SOLVER} -I${DESPOT_UTIL} -I${DESPOT_UTIL_TINYXML} -I${MY_JNI_HEADERS} ${CPP_FOLDER}/TigerState.cpp -o ${OUT_DIR}/tigerState.o
+	#g++ -shared -fPIC -o ${OUT_DIR}/libtemperaturesampler.so ${OUT_DIR}/temperatureSampler.o ${OUT_DIR}/tigerState.o -lc
+	g++ -shared -fPIC  ${DESPOT}/*.o ${OUT_DIR}/ajanAgent.o  ${OUT_DIR}/ajanPlanner.o -o ${OUT_DIR}/libajanplanner.so -lc
+
+run_temperaturesampler: temperaturesampler1
 	java -cp ${OUT_DIR} -Djava.library.path=${OUT_DIR} com.jni.example.TemperatureSampler
+
+run_planner: AJANPlanner
+	java -cp ${OUT_DIR} -Djava.library.path=${OUT_DIR} com.ajan.POMDP.AJANPlanner
 
 clean:
 	rm -rf ${OUT_DIR} ${MY_JNI_HEADERS}
