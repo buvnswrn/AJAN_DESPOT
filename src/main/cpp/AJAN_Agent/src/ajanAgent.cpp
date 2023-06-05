@@ -95,7 +95,7 @@ namespace despot {
     }
 
     ValuedAction AJANAgent::GetBestAction() const {
-        return ValuedAction(HOVER,-1);
+        return getAJANBestAction();
     }
 
     ScenarioLowerBound *AJANAgent::CreateScenarioLowerBound(std::string name, std::string particle_bound_name) const {
@@ -212,6 +212,17 @@ namespace despot {
         jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"GetMaxReward","()D");
         jdouble obsProb = javaEnv->CallDoubleMethod(javaAgentObject,javaMethod);
         return obsProb;
+    }
+    ValuedAction AJANAgent::getAJANBestAction() const {
+        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
+        jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"GetBestAction","()Lcom/ajan/POMDP/ValuedAction;");
+        jobject valuedAction = javaEnv->CallObjectMethod(javaAgentObject,javaMethod,10);
+        jclass valuedActionClass = javaEnv->GetObjectClass(valuedAction);
+        jfieldID actionField = javaEnv->GetFieldID(valuedActionClass, "action", "I");
+        jfieldID valueField = javaEnv->GetFieldID(valuedActionClass, "value", "D");
+        jint action = javaEnv->GetIntField(valuedAction, actionField);
+        jdouble value = javaEnv->GetDoubleField(valuedAction, valueField);
+        return ValuedAction(action,value);
     }
     //endregion
     //region Helpers
