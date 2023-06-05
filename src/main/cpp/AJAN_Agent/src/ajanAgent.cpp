@@ -7,7 +7,6 @@
 #include <despot/util/coord.h>
 #include <despot/core/builtin_lower_bounds.h>
 #include <despot/core/builtin_policy.h>
-#include <despot/core/builtin_upper_bounds.h>
 #include <despot/core/particle_belief.h>
 
 #include <jni.h>
@@ -25,9 +24,7 @@ namespace despot {
         // this method will fail
     }
     AJANAgentState::AJANAgentState(int _state_id):
-//        state_id = _state_id;
         agent_position(_state_id){}
-        // this method will fail
 
     AJANAgentState::AJANAgentState(JNIEnv * env, jobject stateObject) {
         AJANAgentState::javaEnv = env;
@@ -35,8 +32,6 @@ namespace despot {
     }
 
     string AJANAgentState::text() const {
-        // Do Java call here
-//        return "s" + to_string(state_id);
         return agent_position == AJANAgent::LEFT ? "LEFT" : "RIGHT";
     }
 
@@ -109,20 +104,14 @@ namespace despot {
 
     //region Print Functions
     void AJANAgent::PrintState(const State &state, ostream &out) const {
-//        jobject agentState = convertToAJANAgentState(state);
-//        printInJava("PrintState","(Lcom/ajan/POMDP/implementation/AJAN_Agent_State;)V",
-//                    agentState);
-//        cout<<"Printing State"<<endl;
         const AJANAgentState& droneState = static_cast<const AJANAgentState&>(state);
         out << droneState.text() << endl;
     }
 
     void AJANAgent::PrintBelief(const Belief &belief, ostream &out) const {
-//        cout<<"Printing Belief"<<endl;
     }
 
     void AJANAgent::PrintObs(const State &state, OBS_TYPE obs, ostream &out) const {
-//        cout<<"Printing Obs"<<endl;
         out << (obs == LEFT ? "LEFT" : "RIGHT")<< endl;
         const AJANAgentState& droneState = static_cast<const AJANAgentState&>(state);
         jobject agentState = convertToAJANAgentState(droneState);
@@ -131,7 +120,6 @@ namespace despot {
     }
 
     void AJANAgent::PrintAction(ACT_TYPE action, ostream &out) const {
-//        cout<<"Printing Action"<<endl;
         if(action == LEFT){
             out << "Fly Left" << endl;
         } else if (action == RIGHT) {
@@ -139,8 +127,6 @@ namespace despot {
         } else {
             out << "Hover" << endl;
         }
-//        printInJava("PrintAction","(I)V",
-//                    action);
     }
     //endregion
     //region Memory Functions
@@ -171,14 +157,11 @@ namespace despot {
     // region AJAN-DESPOT Functions
     bool AJANAgent::getAJANStep(despot::AJANAgentState &s, double random_num, despot::ACT_TYPE action, double &reward,
                      despot::OBS_TYPE &obs,const char *methodName, const char *returnType) const{
-//        cout << "Getting AJAN Step"<<endl;
         jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
-//        cout<<"fetched the class type"<<endl;
         jmethodID javaMethod = javaEnv->GetMethodID(javaClass, methodName, returnType);
         jobject state = convertToAJANAgentState(s);
         jboolean stepExecuted = javaEnv->CallBooleanMethod(javaAgentObject, javaMethod,
                                                            state, random_num,action,reward, obs);
-//        cout << "Method Execute Complete"<<endl;
         return stepExecuted == JNI_TRUE;
     }
     int AJANAgent::getAJANNum(const char *methodName, const char *returnType) const {
@@ -245,19 +228,12 @@ namespace despot {
     //endregion
     //region Helpers
     jobject AJANAgent::convertToAJANAgentState(const AJANAgentState &state) const {
-//        std::cout<<"Converting AJAN State to State" <<std::endl;
-//    int state = getAJANStateFromState();
         jclass ajanStateClass = javaEnv ->FindClass("com/ajan/POMDP/implementation/AJAN_Agent_State");
-//        cout<<"      "<<endl;
         jobject ajanState = javaEnv->AllocObject(ajanStateClass);
-//            cout<<"Getting Field ID:state_id"<<endl;
             jfieldID state_id = javaEnv->GetFieldID(ajanStateClass, "state_id","I");
-//            cout<<"Getting Field ID:scenario_id"<<endl;
             jfieldID scenario_id = javaEnv->GetFieldID(ajanStateClass, "scenario_id","I");
-//            cout<<"Getting Field ID:weight"<<endl;
             jfieldID weight = javaEnv->GetFieldID(ajanStateClass, "weight","D");
             jfieldID agent_position = javaEnv->GetFieldID(ajanStateClass, "agent_position", "I");
-//            cout<<"Setting Field IDs"<<endl;
             javaEnv->SetIntField(ajanState, state_id, state.state_id);
             javaEnv->SetIntField(ajanState, scenario_id, state.scenario_id);
             javaEnv->SetDoubleField(ajanState, weight, state.weight);
@@ -282,39 +258,26 @@ namespace despot {
     }
 
     void AJANAgent::UpdateValues(AJANAgentState &state, double &reward, OBS_TYPE &obs) const {
-//        cout<<"Getting the class"<<endl;
         jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
-//        cout<<"Getting currentState"<<endl;
         jfieldID currentStateID = javaEnv->GetStaticFieldID(javaClass, "currentState",
                                                             "Lcom/ajan/POMDP/implementation/AJAN_Agent_State;");
         jobject currentState = javaEnv->GetStaticObjectField(javaClass,currentStateID);
-//        cout<<"Getting the currentReward"<<endl;
         jfieldID currentRewardID = javaEnv->GetStaticFieldID(javaClass, "currentReward", "D");
         jdouble currentReward = javaEnv->GetStaticDoubleField(javaClass, currentRewardID);
-//        cout<<"Getting the currentObservation"<<endl;
         jfieldID currentObservationID = javaEnv->GetStaticFieldID(javaClass, "currentObservation", "I");
         jint currentObservation = javaEnv->GetStaticIntField(javaClass,currentObservationID);
-//        cout<<"Typecasting them"<<endl;
-//        jfieldID currentAction = javaEnv->GetStaticFieldID(javaClass, "currentAction", "I");
         reward = currentReward;
-//        cout<<"Typecasting them"<<endl;
         obs = currentObservation;
         UpdateStateValues(state,currentState);
     }
 
     void AJANAgent::UpdateStateValues(AJANAgentState &ajanAgentState, jobject pJobject) const {
-//        cout<<"Updating the state values";
         jclass javaClass = javaEnv->GetObjectClass(pJobject);
-//        cout<<"getting agent_position";
         jfieldID ajanAgentStateID = javaEnv->GetFieldID(javaClass,"agent_position","I");
         jint ajanAgentPosition = javaEnv->GetIntField(pJobject,ajanAgentStateID);
-//        cout<<"typecasting agent_position";
         ajanAgentState.agent_position = ajanAgentPosition;
-//        cout<<"c_agent_position:"<<ajanAgentState.agent_position<<" ";
     }
     jobject AJANAgent::getAJANStateFromState(const State *state) const{
-
-//    int state = getAJANStateFromState();
         jclass ajanStateClass = javaEnv ->FindClass("com/ajan/POMDP/implementation/AJAN_Agent_State");
         jobject ajanState = javaEnv->AllocObject(ajanStateClass);
         jfieldID state_id = javaEnv->GetFieldID(ajanStateClass, "state_id","I");
