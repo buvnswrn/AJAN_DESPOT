@@ -73,8 +73,7 @@ namespace despot {
     }
 
     State *AJANAgent::CreateStartState(std::string type) const {
-        //TODO:Communicate with Java
-        return new AJANAgentState(Random::RANDOM.NextInt(2));
+        return getAJANStateState(type);
     }
 
     Belief *AJANAgent::InitialBelief(const State *start, std::string type) const {
@@ -223,6 +222,26 @@ namespace despot {
         jint action = javaEnv->GetIntField(valuedAction, actionField);
         jdouble value = javaEnv->GetDoubleField(valuedAction, valueField);
         return ValuedAction(action,value);
+    }
+    AJANAgentState *AJANAgent::getAJANStateState(std::string type) const {
+        cout<<"Publishing state:"<<endl;
+        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
+        std::string ty = "testing";
+        jstring typeString = javaEnv->NewStringUTF(ty.c_str());
+        jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"CreateStartState",
+                                        "(Ljava/lang/String;)Lcom/ajan/POMDP/implementation/AJAN_Agent_State;");
+        jobject valuedAction = javaEnv->CallObjectMethod(javaAgentObject,javaMethod,typeString);
+        jclass valuedActionClass = javaEnv->GetObjectClass(valuedAction);
+        jfieldID weightField = javaEnv->GetFieldID(valuedActionClass, "weight", "D");
+        jfieldID stateField = javaEnv->GetFieldID(valuedActionClass, "state_id", "I");
+        jfieldID scenarioField = javaEnv->GetFieldID(valuedActionClass, "scenario_id", "I");
+        jfieldID agentPositionField = javaEnv->GetFieldID(valuedActionClass, "agent_position", "I");
+        AJANAgentState *ajanAgentState = new AJANAgentState();
+        ajanAgentState->agent_position = javaEnv->GetIntField(valuedAction, agentPositionField);
+        ajanAgentState->state_id = javaEnv->GetIntField(valuedAction, stateField);
+        ajanAgentState->scenario_id = javaEnv->GetIntField(valuedAction, scenarioField);
+        ajanAgentState->weight = javaEnv->GetDoubleField(valuedAction, weightField);
+        return ajanAgentState;
     }
     //endregion
     //region Helpers

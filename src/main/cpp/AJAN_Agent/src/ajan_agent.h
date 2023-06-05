@@ -79,6 +79,8 @@ namespace despot {
         double getAJANMaxReward() const;
 
         ValuedAction getAJANBestAction() const;
+
+        AJANAgentState *getAJANStateState(std::string type) const;
     };
 }
 
