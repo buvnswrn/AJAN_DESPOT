@@ -75,6 +75,8 @@ namespace despot {
         int getAJANNum(const char* methodName, const char* returnType) const;
 
         double getAJANObsProb(OBS_TYPE obs, const AJANAgentState &state, ACT_TYPE a) const;
+
+        double getAJANMaxReward() const;
     };
 }
 

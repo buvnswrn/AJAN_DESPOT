@@ -91,7 +91,7 @@ namespace despot {
     }
 
     double AJANAgent::GetMaxReward() const {
-        return 0;
+        return getAJANMaxReward();
     }
 
     ValuedAction AJANAgent::GetBestAction() const {
@@ -205,6 +205,12 @@ namespace despot {
         jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"ObsProb","(ILcom/ajan/POMDP/implementation/AJAN_Agent_State;I)D");
         jobject s = convertToAJANAgentState(state);
         jdouble obsProb = javaEnv->CallDoubleMethod(javaAgentObject,javaMethod,obs,s,a);
+        return obsProb;
+    }
+    double AJANAgent::getAJANMaxReward() const {
+        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
+        jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"GetMaxReward","()D");
+        jdouble obsProb = javaEnv->CallDoubleMethod(javaAgentObject,javaMethod);
         return obsProb;
     }
     //endregion

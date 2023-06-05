@@ -115,7 +115,7 @@ public class AJAN_Agent extends DSPOMDP {
 
     @Override
     public double GetMaxReward() {
-        return 10;
+        return 0;
     }
 
     @Override
