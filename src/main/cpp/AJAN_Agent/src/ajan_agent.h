@@ -71,6 +71,10 @@ namespace despot {
         void UpdateValues(AJANAgentState &state, double &reward, OBS_TYPE &obs) const;
 
         void UpdateStateValues(AJANAgentState &state, jobject pJobject) const;
+
+        int getAJANNum(const char* methodName, const char* returnType) const;
+
+        double getAJANObsProb(OBS_TYPE obs, const AJANAgentState &state, ACT_TYPE a) const;
     };
 }
 
