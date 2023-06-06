@@ -41,7 +41,8 @@ run_temperaturesampler: temperaturesampler1
 	java -cp ${OUT_DIR} -Djava.library.path=${OUT_DIR} com.jni.example.TemperatureSampler
 
 run_planner: AJANPlanner
-	java -cp ${OUT_DIR} -Djava.library.path=${OUT_DIR} com.ajan.POMDP.AJANPlanner
+	#java -cp ${OUT_DIR} -Djava.library.path=${OUT_DIR} com.ajan.POMDP.AJANPlanner
+	java -cp ${OUT_DIR} -Djava.library.path=${OUT_DIR} de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.AJANPlanner
 
 clean:
 	rm -rf ${OUT_DIR} ${MY_JNI_HEADERS}

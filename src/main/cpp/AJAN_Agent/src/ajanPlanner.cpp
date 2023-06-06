@@ -1,7 +1,7 @@
 //
 // Created by bhuvanesh on 25.05.23.
 //
-#include "com_ajan_POMDP_AJANPlanner.h"
+#include "de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_AJANPlanner.h"
 #include <despot/planner.h>
 #include "ajan_agent.h"
 #include <jni.h>
@@ -79,7 +79,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     return JNI_VERSION_1_6;
 }
 // region JNI Methods
-JNIEXPORT jint JNICALL Java_com_ajan_POMDP_AJANPlanner_RunPlanner(JNIEnv * Env, jobject thisObject, jobject agentObject) {
+JNIEXPORT jint JNICALL Java_de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_AJANPlanner_RunPlanner
+(JNIEnv * Env, jobject thisObject, jobject agentObject) {
     char* argv[] = {strdup("AJAN_Planner") };
     std::cout<<"Starting the DESPOT planner"<<std::endl;
     jclass javaClass = Env->GetObjectClass(thisObject);
@@ -89,7 +90,7 @@ JNIEXPORT jint JNICALL Java_com_ajan_POMDP_AJANPlanner_RunPlanner(JNIEnv * Env, 
     return AJANPlanner(Env, thisObject,&agentObject).RunEvaluation(1,argv);
 }
 
-JNIEXPORT void JNICALL Java_com_ajan_POMDP_AJANPlanner_InitializePlannerInDespot
+JNIEXPORT void JNICALL Java_de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_AJANPlanner_InitializePlannerInDespot
         (JNIEnv * env, jobject thisObject){
     javaGlobalEnv = env;
     javaPlannerObject = thisObject;
