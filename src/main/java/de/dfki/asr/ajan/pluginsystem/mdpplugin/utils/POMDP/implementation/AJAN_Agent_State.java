@@ -1,6 +1,7 @@
-package com.ajan.POMDP.implementation;
+package de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.implementation;
 
-import com.ajan.POMDP.State;
+
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.State;
 
 public class AJAN_Agent_State extends State {
 

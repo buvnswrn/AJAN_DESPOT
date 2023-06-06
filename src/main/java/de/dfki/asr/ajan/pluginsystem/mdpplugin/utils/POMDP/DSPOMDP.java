@@ -1,6 +1,8 @@
-package com.ajan.POMDP;
+package de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP;
 
-import com.ajan.POMDP.implementation.AJAN_Agent_State;
+
+
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.implementation.AJAN_Agent_State;
 
 import java.util.Vector;
 

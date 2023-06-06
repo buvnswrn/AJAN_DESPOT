@@ -26,7 +26,7 @@ JNIEXPORT jobject JNICALL Java_com_jni_example_TemperatureSampler_getDetailedTem
 /*
  * Class:     com_jni_example_TemperatureSampler
  * Method:    InitializeObject
- * Signature: (Lcom/ajan/POMDP/implementation/AJAN_Agent_State;)V
+ * Signature: (Lde/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/implementation/AJAN_Agent_State;)V
  */
 JNIEXPORT void JNICALL Java_com_jni_example_TemperatureSampler_InitializeObject
   (JNIEnv *, jobject, jobject);

@@ -1,4 +1,4 @@
-package com.ajan.POMDP;
+package de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP;
 
 import java.util.Vector;
 

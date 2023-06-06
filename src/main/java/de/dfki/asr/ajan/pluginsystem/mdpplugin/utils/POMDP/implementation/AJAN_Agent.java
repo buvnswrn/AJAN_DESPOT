@@ -1,11 +1,13 @@
-package com.ajan.POMDP.implementation;
+package de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.implementation;
 
-import com.ajan.POMDP.Belief;
-import com.ajan.POMDP.DSPOMDP;
-import com.ajan.POMDP.State;
-import com.ajan.POMDP.ValuedAction;
+
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
+
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.Belief;
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.DSPOMDP;
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.State;
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.ValuedAction;
 
 import java.util.Random;
 import java.util.Vector;
@@ -25,7 +27,6 @@ public class AJAN_Agent extends DSPOMDP {
 
     public AJAN_Agent() {
         currentState = new AJAN_Agent_State(-1, 0.5); // Check for memory management here
-//        InitializeObject(this);
     }
     @Override
     public boolean Step(AJAN_Agent_State state, double random_num, int action, double reward, int obs) {
@@ -72,12 +73,7 @@ public class AJAN_Agent extends DSPOMDP {
     @Override
     public double ObsProb(int obs, AJAN_Agent_State state, int action) {
         // TODO: Implementation needed in Knowledge Graphs - Execute the Observation Probability query here. Out: AgentInfo,reward,obs
-//        currentState = state;
-//        currentAction = action;
-//        currentObservation = obs;
-        // check for the observation made
         if(action !=HOVER)
-            // return the
             return obs == 2 ? 1 : 0;
         return state.agent_position == obs ? (1-NOISE): NOISE;
     }
@@ -104,15 +100,6 @@ public class AJAN_Agent extends DSPOMDP {
         return particles;
     }
 
-//    public Vector<State> GetInitialBeliefParticles(State start, String type){
-//        Vector<State> particles = new Vector<>();
-//        AJAN_Agent_State left = new AJAN_Agent_State(-1,0.5);
-//        particles.add(left);
-//        AJAN_Agent_State right = new AJAN_Agent_State(-1, 0.5);
-//        particles.add(right);
-//        return particles;
-//    }
-
     @Override
     public double GetMaxReward() {
         return 0;
@@ -132,7 +119,6 @@ public class AJAN_Agent extends DSPOMDP {
 
     @Override
     public void PrintObs(State state, int obs) {
-//        LOGGER.info(String.valueOf(obs)); // (obs==LEFT?"LEFT":"RIGHT");
         System.out.println(String.valueOf(obs));
     }
 
@@ -154,27 +140,9 @@ public class AJAN_Agent extends DSPOMDP {
 
     }
 
-//    @Override
-//    public State Copy(State state) {
-//        return null;
-//    }
-//
-//    @Override
-//    public int NumActiveParticles() {
-//        return 0;
-//    }
-
     public String CreateScenarioLowerBound(String name, String particle_bound_name){
         return "DEFAULT";
     }
-
-//    public void InitializeParameters(AJAN_Agent_State state,double random_num,int action,double reward,int obs){
-//        System.out.println("Setting Agent Parameters");
-//        currentState = state;
-//        currentReward = reward;
-//        currentAction = action;
-//        currentObservation = obs;
-//    }
 
     public AJAN_Agent getParameters(){
         System.out.println("Returning Agent Parameters");

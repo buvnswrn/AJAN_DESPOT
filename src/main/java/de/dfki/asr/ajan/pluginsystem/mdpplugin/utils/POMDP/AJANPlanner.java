@@ -1,7 +1,7 @@
-package com.ajan.POMDP;
+package de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP;
 
 
-import com.ajan.POMDP.implementation.AJAN_Agent;
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.implementation.AJAN_Agent;
 
 public class AJANPlanner {
     public AJAN_Agent ajanAgent;

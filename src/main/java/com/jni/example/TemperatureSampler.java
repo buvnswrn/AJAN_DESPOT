@@ -1,7 +1,7 @@
 package com.jni.example;
 
 
-import com.ajan.POMDP.implementation.AJAN_Agent_State;
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.implementation.AJAN_Agent_State;
 
 public class TemperatureSampler {
     static AJAN_Agent_State currentStateObject;
