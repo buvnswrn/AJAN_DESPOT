@@ -8,12 +8,12 @@
 #include <despot/core/builtin_lower_bounds.h>
 #include <despot/core/builtin_policy.h>
 #include <despot/core/particle_belief.h>
-
+#include <any>
 #include <jni.h>
 using namespace std;
 namespace despot {
 
-
+    std::map<std::string,std::any> variables;
     const ACT_TYPE AJANAgent::LEFT = 0;
     const ACT_TYPE AJANAgent::RIGHT = 1;
     const ACT_TYPE AJANAgent::HOVER = 2;
