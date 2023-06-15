@@ -4,6 +4,7 @@
 #include "de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_AJANPlanner.h"
 #include <despot/planner.h>
 #include "ajan_agent.h"
+#include "ajanWorld.h"
 #include <jni.h>
 
 
@@ -20,11 +21,13 @@ public:
     jobject javaPlannerObject;
     jobject* javaAgentObject;
     jobject javaStateObject;
+    jobject*  javaWorldObject;
     //endregion
-    AJANPlanner(JNIEnv *& env, jobject thisObject,jobject * agentObject){
+    AJANPlanner(JNIEnv *& env, jobject thisObject,jobject * agentObject, jobject * worldObject){
         AJANPlanner::javaEnv = env;
         AJANPlanner::javaPlannerObject = thisObject;
         AJANPlanner::javaAgentObject = agentObject;
+        AJANPlanner::javaWorldObject = worldObject;
         jclass javaClass = AJANPlanner::javaEnv->GetObjectClass(thisObject);
         jmethodID javaMethod = AJANPlanner::javaEnv->GetMethodID(javaClass,"PrintMethod","()V");
         AJANPlanner::javaEnv->CallVoidMethod(thisObject,javaMethod);
@@ -38,7 +41,16 @@ public:
     }
 
     World* InitializeWorld(std::string& world_type, DSPOMDP* model, option::Option* options){
-        return InitializePOMDPWorld(world_type, model, options);
+        ajanWorld* world = new ajanWorld(AJANPlanner::javaEnv, AJANPlanner::javaWorldObject);
+        world->Connect();
+        world->Initialize();
+//        world_type = "simulator";
+        world_type = getJstring("getWorldType","()Ljava/lang/String;");
+        if(world_type == "pomdp"){
+            return InitializePOMDPWorld(world_type, model, options);
+        }
+//        return InitializePOMDPWorld(world_type, model, options);
+        return world;
     }
 
     std::string ChooseSolver(){
@@ -50,6 +62,7 @@ public:
 
 
     void InitializeDefaultParameters() {
+        Globals::config.pruning_constant = 0.01; // for laser_tag
     }
 
     //endregion
@@ -80,14 +93,14 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 }
 // region JNI Methods
 JNIEXPORT jint JNICALL Java_de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_AJANPlanner_RunPlanner
-(JNIEnv * Env, jobject thisObject, jobject agentObject) {
+(JNIEnv * Env, jobject thisObject, jobject agentObject, jobject worldObject) {
     char* argv[] = {strdup("AJAN_Planner") };
     std::cout<<"Starting the DESPOT planner"<<std::endl;
     jclass javaClass = Env->GetObjectClass(thisObject);
     jmethodID javaMethod = Env->GetMethodID(javaClass,"PrintMethod","()V");
     Env->CallVoidMethod(thisObject,javaMethod);
     javaGlobalEnv = Env;
-    return AJANPlanner(Env, thisObject,&agentObject).RunEvaluation(1,argv);
+    return AJANPlanner(Env, thisObject,&agentObject, &worldObject).RunEvaluation(1,argv);
 }
 
 JNIEXPORT void JNICALL Java_de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_AJANPlanner_InitializePlannerInDespot

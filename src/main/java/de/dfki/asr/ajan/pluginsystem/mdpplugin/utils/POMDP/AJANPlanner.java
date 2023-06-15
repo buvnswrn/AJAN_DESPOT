@@ -1,10 +1,12 @@
 package de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP;
 
 
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.implementation.AJANWorld;
 import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.implementation.AJAN_Agent;
 
 public class AJANPlanner {
     public AJAN_Agent ajanAgent;
+    public AJANWorld ajanWorld;
     static {
         System.loadLibrary("ajanplanner");
     }
@@ -14,8 +16,9 @@ public class AJANPlanner {
         return true;
     }
 
-    public boolean InitializeWorld() {
+    public boolean InitializeWorld(String worldType) {
         // TODO: See how to implement World class
+
         return true;
     }
     public void PrintMethod() {System.out.println("Received a call");}
@@ -23,13 +26,13 @@ public class AJANPlanner {
         return "DESPOT";
     }
 
-    private native int RunPlanner(AJAN_Agent ajanAgent);
+    private native int RunPlanner(AJAN_Agent ajanAgent, AJANWorld ajanWorld);
     private native void InitializePlannerInDespot();
 
     public static void main(String[] args) {
         AJANPlanner planner = new AJANPlanner();
         planner.InitializeModel();
         planner.InitializePlannerInDespot();
-        planner.RunPlanner(planner.ajanAgent);
+        planner.RunPlanner(planner.ajanAgent,planner.ajanWorld);
     }
 }
