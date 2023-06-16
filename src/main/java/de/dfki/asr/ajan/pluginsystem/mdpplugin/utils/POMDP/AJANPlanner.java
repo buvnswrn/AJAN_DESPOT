@@ -17,8 +17,7 @@ public class AJANPlanner {
     }
 
     public boolean InitializeWorld(String worldType) {
-        // TODO: See how to implement World class
-
+        ajanWorld = new AJANWorld(ajanAgent);
         return true;
     }
     public void PrintMethod() {System.out.println("Received a call");}
