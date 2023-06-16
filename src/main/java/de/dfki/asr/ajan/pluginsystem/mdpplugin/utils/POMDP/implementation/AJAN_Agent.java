@@ -16,9 +16,9 @@ import java.util.Vector;
 public class AJAN_Agent extends DSPOMDP {
 
     static AJAN_Agent_State currentState;
-    static double currentReward;
-    static int currentObservation;
-    static int currentAction;
+    public static double currentReward;
+    public static int currentObservation;
+    public static int currentAction;
     final int LEFT = 0;
     final int RIGHT = 1;
     final int HOVER = 2;
