@@ -22,8 +22,13 @@ State* ajanWorld::GetCurrentState() {
 
 bool ajanWorld::ExecuteAction(despot::ACT_TYPE action, despot::OBS_TYPE &obs) {
     //TODO:Communicate with java
-    return true; // for exit
-    return false; // for continue
+    jclass javaClass = javaEnv->GetObjectClass(javaWorldObject);
+    jmethodID  javaMethod = javaEnv->GetMethodID(javaClass, "ExecuteAction","(II)Z");
+    jboolean  connected = javaEnv->CallBooleanMethod(javaWorldObject,javaMethod, action, obs);
+    javaMethod = javaEnv->GetMethodID(javaClass,"getCurrentObservation","()I");
+    jint currentObservation = javaEnv->CallIntMethod(javaWorldObject,javaMethod);
+    obs = currentObservation;
+    return connected == JNI_TRUE; // true for exit, false for continue
 }
 
 ajanWorld::ajanWorld(JNIEnv *env, jobject* javaWorldObject) {
