@@ -1,9 +1,6 @@
 package de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.implementation;
 
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-
 import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.Belief;
 import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.DSPOMDP;
 import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.State;
@@ -114,12 +111,12 @@ public class AJAN_Agent extends DSPOMDP {
     public void PrintState(State state) {
         AJAN_Agent_State agentState = (AJAN_Agent_State) state;
 //        LOGGER.info(state.text());
-        System.out.println(state.text());
+        System.out.println(agentState.text());
     }
 
     @Override
     public void PrintObs(State state, int obs) {
-        System.out.println(String.valueOf(obs));
+        System.out.println(obs);
     }
 
     @Override
@@ -140,6 +137,7 @@ public class AJAN_Agent extends DSPOMDP {
 
     }
 
+    @Override
     public String CreateScenarioLowerBound(String name, String particle_bound_name){
         return "DEFAULT";
     }

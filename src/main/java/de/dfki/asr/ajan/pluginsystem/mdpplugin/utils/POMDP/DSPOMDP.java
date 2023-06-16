@@ -31,6 +31,8 @@ public abstract class DSPOMDP {
 
     public abstract void PrintBelief(Belief belief);
 
+    public abstract String CreateScenarioLowerBound(String name, String particle_bound_name);
+
 //    public abstract State Copy(State state);
 //    public abstract int NumActiveParticles();
 
