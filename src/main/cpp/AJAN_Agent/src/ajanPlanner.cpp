@@ -4,7 +4,7 @@
 #include "de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_AJANPlanner.h"
 #include <despot/planner.h>
 #include "ajan_agent.h"
-#include "ajanWorld.h"
+#include "AJANWorld.h"
 #include <jni.h>
 
 
@@ -29,6 +29,8 @@ public:
         AJANPlanner::javaAgentObject = agentObject;
         AJANPlanner::javaWorldObject = worldObject;
         jclass javaClass = AJANPlanner::javaEnv->GetObjectClass(thisObject);
+        cout<<"atemmpting to connect to world"<<endl;
+        cout<<"got world"<<endl;
         jmethodID javaMethod = AJANPlanner::javaEnv->GetMethodID(javaClass,"PrintMethod","()V");
         AJANPlanner::javaEnv->CallVoidMethod(thisObject,javaMethod);
         return;
@@ -36,21 +38,30 @@ public:
 
     DSPOMDP* InitializeModel(option::Option* options){
         // Initialize POMDP Model here;
-        DSPOMDP* model = new AJANAgent(AJANPlanner::javaEnv,AJANPlanner::javaAgentObject); //Error from here
+        DSPOMDP* model = new AJANAgent(AJANPlanner::javaEnv,AJANPlanner::javaAgentObject);
+        //Error from here
         return model;
     }
 
-    World* InitializeWorld(std::string& world_type, DSPOMDP* model, option::Option* options){
-        ajanWorld* world = new ajanWorld(AJANPlanner::javaEnv, AJANPlanner::javaWorldObject);
-        world->Connect();
-        world->Initialize();
+        World* InitializeWorld(std::string& world_type, DSPOMDP* model, option::Option* options){
 //        world_type = "simulator";
+        cout <<"Trying to get worldtype"<<endl;
         world_type = getJstring("getWorldType","()Ljava/lang/String;");
         if(world_type == "pomdp"){
             return InitializePOMDPWorld(world_type, model, options);
+        } else {
+            cout<<"Create a world as defined and implemented by the user"<<endl;
+            AJANWorld* world = new AJANWorld(AJANPlanner::javaEnv, AJANPlanner::javaWorldObject);
+            cout<<"Establish connection with external system"<<endl;
+            world->Connect();
+            cout<<"Initialize the state of the external system"<<endl;
+            world->Initialize();
+            cout<<"Initialized"<<endl;
+            static_cast<AJANAgent*>(model)->NoiseSigma(world->noise_sigma_);
+            cout<<"Assigned Noise sigma"<<endl;
+            return world;
         }
 //        return InitializePOMDPWorld(world_type, model, options);
-        return world;
     }
 
     std::string ChooseSolver(){
@@ -65,6 +76,60 @@ public:
         Globals::config.pruning_constant = 0.01; // for laser_tag
     }
 
+//    void PlanningLoop(Solver*& solver, World* world, Logger* logger){
+//        for (int i = 0; i < Globals::config.sim_len; i++) {
+//            bool terminal = RunStep(solver, world, logger);
+//            if(terminal)
+//                break;
+//        }
+//    }
+
+//    FIXME: See whether this can be executed in Java side
+
+//    bool RunStep(Solver* solver, World* world, Logger* logger){
+//
+//    }
+    void PlanningLoop(Solver*& solver, World* world, Logger* logger) {
+        for (int i = 0; i < Globals::config.sim_len; i++) {
+            bool terminal = RunStep(solver, world, logger);
+            if (terminal)
+                break;
+        }
+    }
+
+    bool RunStep(Solver* solver, World* world, Logger* logger) {
+        cout<<"Running step"<<endl;
+        logger->CheckTargetTime();
+
+        double step_start_t = get_time_second();
+
+        double start_t = get_time_second();
+        cout<<"Solver search started"<<endl;
+        ACT_TYPE action = solver->Search().action;
+        cout<<"Solver search finished"<<endl;
+        double end_t = get_time_second();
+        double search_time = (end_t - start_t);
+        logi << "[Custom RunStep] Time spent in " << typeid(*solver).name()
+             << "::Search(): " << search_time << endl;
+
+        OBS_TYPE obs;
+        start_t = get_time_second();
+        cout<<"Executing action"<<endl;
+        bool terminal = world->ExecuteAction(action, obs);
+        end_t = get_time_second();
+        double execute_time = (end_t - start_t);
+        logi << "[Custom RunStep] Time spent in ExecuteAction(): " << execute_time << endl;
+
+        start_t = get_time_second();
+        solver->BeliefUpdate(action, obs);
+        end_t = get_time_second();
+        double update_time = (end_t - start_t);
+        logi << "[Custom RunStep] Time spent in Update(): " << update_time << endl;
+
+        return logger->SummarizeStep(step_++, round_, terminal, action, obs,
+                                     step_start_t);
+    }
+
     //endregion
     // region Helper Functions
     std::string getJstring(const char *methodName, const char *returnType) {
@@ -77,6 +142,7 @@ public:
     //endregion
 };
 
+// region JNI Methods
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
     JNIEnv* env;
     if(vm->GetEnv(reinterpret_cast<void**>(&env),JNI_VERSION_1_6)!=JNI_OK){
@@ -91,7 +157,6 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved) {
 //    std::cout<<"Got Preferred Scale:"<<preferredScale<<std::endl;
     return JNI_VERSION_1_6;
 }
-// region JNI Methods
 JNIEXPORT jint JNICALL Java_de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_AJANPlanner_RunPlanner
 (JNIEnv * Env, jobject thisObject, jobject agentObject, jobject worldObject) {
     char* argv[] = {strdup("AJAN_Planner") };
@@ -108,5 +173,7 @@ JNIEXPORT void JNICALL Java_de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_
     javaGlobalEnv = env;
     javaPlannerObject = thisObject;
 }
+
+//endregion
 
 

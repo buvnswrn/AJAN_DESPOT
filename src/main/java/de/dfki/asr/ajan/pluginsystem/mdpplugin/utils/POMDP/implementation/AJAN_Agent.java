@@ -6,8 +6,8 @@ import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.DSPOMDP;
 import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.State;
 import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.ValuedAction;
 
-import java.util.Random;
-import java.util.Vector;
+import java.util.*;
+
 
 
 public class AJAN_Agent extends DSPOMDP {
@@ -20,10 +20,15 @@ public class AJAN_Agent extends DSPOMDP {
     final int RIGHT = 1;
     final int HOVER = 2;
     final double NOISE = 0.15;
+    HashMap<String,?> variables;
 //     private final Logger LOGGER = LoggerFactory.getLogger(AJAN_Agent.class);
 
     public AJAN_Agent() {
         currentState = new AJAN_Agent_State(-1, 0.5); // Check for memory management here
+        /*
+         Vector<Vector<Vector<State>>> transition_probabilities = new Vector<>();
+         transition_probabilities.setSize(NumStates());
+        */
     }
     @Override
     public boolean Step(AJAN_Agent_State state, double random_num, int action, double reward, int obs) {
@@ -36,19 +41,67 @@ public class AJAN_Agent extends DSPOMDP {
         boolean terminal = false;
         // region LOGIC here
         //TODO: Implementation can be in Knowledge Graphs
-        if (action == LEFT || action == RIGHT) {
-            currentReward = state.agent_position != currentAction ? 10 : -100;
-            currentState.agent_position = random_num <= 0.5 ? LEFT : RIGHT;
-            currentObservation = 2;
+        Random random = new Random((long) random_num);
+        random_num = random.nextDouble();
+        //region base_tag
+        if(action == (int)variables.get("TAG")){
+            double distance = (int)variables.get("distance"); //TODO: change the distance function here
+            if(distance <=1){
+                reward = (int)variables.get("TAG_REWARD");
+                terminal = true;
+            } else {
+                reward =  - (int) variables.get("TAG_REWARD");
+            }
         } else {
-            currentReward = -1;
-            if (random_num <= (1 - NOISE))
-                currentObservation = currentState.agent_position;
-            else
-                currentObservation = (LEFT + RIGHT - currentState.agent_position);
+            reward = -1;
+        }
+        final Vector<State> distribution = getTransitionProbabilities(state,action);
+
+        double sum =0;
+        for (int i = 0; i < Objects.requireNonNull(distribution).size(); i++) {
+            final State next = distribution.get(i);
+            sum+=next.weight;
+            if(sum >=random_num){
+                currentState.state_id = next.state_id; // FIXME: How to change the state id
+                break;
+            }
         }
         //endregion
+        //region laser_tag
+        if(terminal) {
+            currentObservation = (int)variables.get("same_loc_obs");
+        } else {
+            if(((State)variables.get("rob_")).state_id == ((State)variables.get("rob_")).state_id ) {
+                currentObservation = (int) variables.get("same_loc_obs");
+            } else {
+                Vector<Vector<Double>> laser_tag_distribution = getReadingDistribution(state.state_id);
+
+                currentObservation = 0;
+                for (int dir = 0; dir < (int) variables.get("NBEAMS"); dir++) {
+                    double mass = random.nextDouble();
+                    int reading = 0;
+                    for(; reading< laser_tag_distribution.get(dir).size();reading++){
+                        SetReading(reading, dir);
+                    }
+                }
+            }
+        }
+        //endregion
+        //endregion
         return terminal;
+    }
+
+    private Vector<Vector<Double>> getReadingDistribution(int stateId) {
+    return null;
+    }
+
+    private Vector<State> getTransitionProbabilities(AJAN_Agent_State state, int action) {
+        return null;
+    }
+    private void SetReading(int observation, int dir) {
+        currentObservation &=  ~(((int)variables.get("ONE")<< (int)variables.get("BITS_PER_READING")-1)
+                <<(dir *(int)variables.get("BITS_PER_READING")));
+        currentObservation |= observation << (dir * (int)variables.get("BITS_PER_READING"));
     }
 
     @Override
@@ -59,7 +112,8 @@ public class AJAN_Agent extends DSPOMDP {
     @Override
     public int NumStates() {
         // TODO: KB Implementation
-        return 2;}
+        return 2; // return floor_.NumCells()* floor_.NumCells();
+    }
 
     @Override
     public double Reward(State state, int action) {
@@ -110,8 +164,18 @@ public class AJAN_Agent extends DSPOMDP {
     @Override
     public void PrintState(State state) {
         AJAN_Agent_State agentState = (AJAN_Agent_State) state;
+        int aindex = ((int[])variables.get("rob_"))[state.state_id];
+        int oindex = ((int[])variables.get("opp_"))[state.state_id];
 //        LOGGER.info(state.text());
+        int floor_rows = getFloorRows();
+        for (int y = floor_rows; y >= 0; y--) {
+            int index = getFloorRows();
+        }
         System.out.println(agentState.text());
+    }
+
+    private int getFloorRows() {
+        return 0;
     }
 
     @Override

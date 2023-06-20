@@ -32,8 +32,9 @@ public class AJANWorld extends World {
             InitializeROSClient();
         } catch (IOException e) {
             System.err.println("Error in Connecting to ROS Client"+e.getMessage());
+            return false;
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -86,6 +87,9 @@ public class AJANWorld extends World {
         AJAN_Agent.currentObservation &=  ~(((int)variables.get("ONE")<< (int)variables.get("BITS_PER_READING")-1)
                                         <<(dir *(int)variables.get("BITS_PER_READING")));
         AJAN_Agent.currentObservation |= observation << (dir * (int)variables.get("BITS_PER_READING"));
+    }
+    private int GetReading(int obs, int dir) {
+        return AJAN_Agent.currentObservation>>(dir * (int)variables.get("BITS_PER_READING"))&(((int)variables.get("ONE")<<(int)variables.get("BITS_PER_READING")-1));
     }
     public int getCurrentObservation(){
         return AJAN_Agent.currentObservation;
