@@ -21,9 +21,11 @@ public class AJANWorld extends World {
         this.ajanAgent = ajanAgent;
         variables = new HashMap<>();
         variables.put("ONE",1);
-        variables.put("N_BEAMS",1);
-        variables.put("BITS_PER_READING",1);
+        variables.put("N_BEAMS",8);
+        variables.put("BITS_PER_READING",7);
         variables.put("TAG",4);
+        variables.put("NUM_LASER_DIRECTIONS",8);
+        variables.put("TERMINATION_OBSERVATION",101);
     }
 
     @Override
@@ -58,14 +60,32 @@ public class AJANWorld extends World {
             String executeActionResponse = ExecuteAction(action);
             JSONObject jsonObject = new JSONObject(executeActionResponse);
             JSONArray observations = (JSONArray) jsonObject.get("observations");
-            for (int dir = 0; dir < observations.length(); dir++) {
-                SetReading((int) observations.get(dir), dir);
-                // OPTIMIZE: Check for converting the data type to long instead of int
+            if(action == (int)variables.get("TAG") && (boolean)jsonObject.get("tag_success")) {
+                AJAN_Agent.currentObservation = 0;
+                for (int dir = 0; dir < (int)variables.get("NUM_LASER_DIRECTIONS"); dir++) {
+                    SetReading((int)variables.get("TERMINATION_OBSERVATION"),dir);
+                }
+                return true;
+            } else {
+                System.out.println("Laser Observations");
+                System.out.println("North: "+ observations.get(0));
+                System.out.println("East: "     + observations.get(1));
+                System.out.println("South: "    + observations.get(2));
+                System.out.println("West: "     + observations.get(3));
+                System.out.println("NorthEast: "+ observations.get(4));
+                System.out.println("SouthEast: "+ observations.get(5));
+                System.out.println("SouthWest: "+ observations.get(6));
+                System.out.println("NorthWest: "+ observations.get(7));
+                for (int dir = 0; dir < observations.length(); dir++) {
+                    SetReading((int) observations.get(dir), dir);
+                    // OPTIMIZE: Check for converting the data type to long instead of int
+                }
+                return false;
             }
         } catch (IOException e) {
             System.err.println("Error in Executing Action:"+e.getMessage());
+            return false;
         }
-        return false;
     }
     private static String ExecuteAction(int action) throws IOException {
         String URI = "http://127.0.0.1:8000/AJAN/ros/call-service/?service_name=laser_tag_action_obs&action="+ action;

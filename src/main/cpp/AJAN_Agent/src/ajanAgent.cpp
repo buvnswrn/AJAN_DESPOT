@@ -78,11 +78,10 @@ namespace despot {
         AJANAgent::javaAgentObject = AJANAgent::javaEnv->NewGlobalRef(*agentObject);
 
     }
-    bool AJANAgent::Step(despot::State &s, double random_num, despot::ACT_TYPE action, double &reward,
+    bool AJANAgent::Step(despot::State &state, double random_num, despot::ACT_TYPE action, double &reward,
                          despot::OBS_TYPE &obs) const {
-        AJANAgentState& ajanAgentState = static_cast<AJANAgentState&>(s);
         Random random(random_num);
-        bool terminal = BaseStep(s, random.NextDouble(), action, reward);
+        bool terminal = BaseStep(state, random.NextDouble(), action, reward);
         //region basetag call
 
         //endregion
@@ -90,10 +89,10 @@ namespace despot {
         if(terminal) {
             obs = same_loc_obs_;
         } else {
-            if(rob_[ajanAgentState.state_id] == opp_[ajanAgentState.state_id])
+            if(rob_[state.state_id] == opp_[state.state_id])
                 obs = same_loc_obs_;
             else {
-                const vector<vector<double>>& laser_distribution = reading_distributions_[ajanAgentState.state_id];
+                const vector<vector<double>>& laser_distribution = reading_distributions_[state.state_id];
                 obs = 0;
                 for (int dir = 0; dir < NBEAMS; dir++) {
                     double mass = random.NextDouble();
@@ -129,8 +128,7 @@ namespace despot {
 //        return getAJANNum("NumStates","()I");
     }
 
-    double AJANAgent::ObsProb(OBS_TYPE obs, const State &s, ACT_TYPE a) const {
-        const AJANAgentState& state = static_cast<const AJANAgentState&>(s);
+    double AJANAgent::ObsProb(OBS_TYPE obs, const State &state, ACT_TYPE a) const {
         if (rob_[state.state_id] == opp_[state.state_id])
             return obs == same_loc_obs_;
         double prod = 1.0;
@@ -214,8 +212,9 @@ namespace despot {
 //            }
 //        }
         if(type == "SP") {
+            cout<<"Hit default actions";
             default_action_.resize(NumStates());
-            for (int s = 0; s < NumStates(); ++s) {
+            for (int s = 0; s < NumStates(); s++) {
                 default_action_[s] = 0;
                 if(rob_[s] == opp_[s]){
                     default_action_[s] = TagAction();
@@ -276,7 +275,7 @@ namespace despot {
             exit(1);
             return NULL;
         }
-        return bound;
+//        return bound;
     }
     ScenarioUpperBound *AJANAgent::CreateScenarioUpperBound(std::string name, std::string particle_bound_name) const {
         if(name =="TRIVIAL" || name == "DEFAULT"){
@@ -531,10 +530,10 @@ namespace despot {
         }
 
         transition_probabilities_.resize(NumStates());
-        for (int s = 0; s < NumStates(); ++s) {
+        for (int s = 0; s < NumStates(); s++) {
             transition_probabilities_[s].resize(NumActions());
             const map<int, double>& opp_distribution = OppTransitionDistribution(s);
-            for (int a = 0; a < NumActions(); ++a) {
+            for (int a = 0; a < NumActions(); a++) {
                 transition_probabilities_[s][a].clear();
                 int next_rob = NextRobPosition(rob_[s], opp_[s], a);
                 if(!(a == TagAction() && Coord::ManhattanDistance(floor_.GetCell(rob_[s]), floor_.GetCell(opp_[s]))<=1)){
@@ -627,7 +626,7 @@ namespace despot {
             distribution[index] += 0.4;
         }
         distribution[floor_.GetIndex(opp)]+=0.2;
-        ;        return distribution;
+        return distribution;
     }
 
     void AJANAgent::ReadConfig(std::istream& is) {
@@ -753,7 +752,7 @@ namespace despot {
 
     Coord AJANAgent::MostLikelyOpponentPosition(const vector<State *> &particles) const {
 //        cout<<"MostLikelyOppPosition"<<endl;
-        vector<double> probs = vector<double>(floor_.NumCells());
+        static vector<double> probs = vector<double>(floor_.NumCells());
 
         for (int i = 0; i < particles.size(); i++) {
             AJANAgentState* ajanAgentState = static_cast<AJANAgentState*>(particles[i]);

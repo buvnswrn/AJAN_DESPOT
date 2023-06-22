@@ -42,7 +42,7 @@ namespace despot {
         AJANAgent();
         AJANAgent(JNIEnv* javaEnv, jobject* javaAgentObject);
         //region POMDP Functions
-        bool Step(State& s, double random_num, ACT_TYPE action, double& reward, OBS_TYPE& obs) const;
+        bool Step(State& state, double random_num, ACT_TYPE action, double& reward, OBS_TYPE& obs) const;
         int NumStates() const;
         int NumActions() const;
         double ObsProb(OBS_TYPE obs, const State& s, ACT_TYPE a) const;
