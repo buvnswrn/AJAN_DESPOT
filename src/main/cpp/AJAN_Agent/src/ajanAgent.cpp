@@ -6,6 +6,7 @@
 #include "AjanPolicy.h"
 #include "AJANParticleUpperBound.h"
 #include "AJANPOMCPPrior.h"
+#include "AJANBelief.h"
 
 #include <despot/util/coord.h>
 #include <despot/core/builtin_lower_bounds.h>
@@ -201,16 +202,16 @@ namespace despot {
     }
 
     void AJANAgent::ComputeDefaultActions(string type) const {
-//        if(type == "MDP") {
-//// Consider this for MDP Implementation
-////            const_cast<AJANAgent*>(this)->ComputeOptimalPolicyUsingVI();
-//        int num_states = NumStates();
-//        default_action_.resize(num_states);
-//
-//            for (int s = 0; s < num_states; s++) {
-//                default_action_[s] = policy_[s].action;
-//            }
-//        }
+        if(type == "MDP") {
+// Consider this for MDP Implementation
+            const_cast<AJANAgent*>(this)->ComputeOptimalPolicyUsingVI();
+        int num_states = NumStates();
+        default_action_.resize(num_states);
+
+            for (int s = 0; s < num_states; s++) {
+                default_action_[s] = policy_[s].action;
+            }
+        }
         if(type == "SP") {
             cout<<"Hit default actions";
             default_action_.resize(NumStates());
@@ -264,7 +265,7 @@ namespace despot {
                                      CreateParticleLowerBound(particle_bound_name));
         } else if (name == "DEFAULT" && same_loc_obs_ == floor_.NumCells()){
             cout << "same_loc_obs_ == floor_.NumCells() need to implement MDP methods"<<endl;
-            ComputeDefaultActions("SP"); // This type should be MDP but we are using SP for now
+            ComputeDefaultActions("MDP"); // This type should be MDP but we are using SP for now
             return new ModeStatePolicy(model, *indexer, *policy,
                                        CreateParticleLowerBound(particle_bound_name));
         } else {
@@ -303,7 +304,9 @@ namespace despot {
         return DSPOMDP::CreateParticleUpperBound(name);
     }
 
-
+    const vector<State>& AJANAgent::TransitionProbability(int s, ACT_TYPE a) const {
+        return transition_probabilities_[s][a];
+    }
 
     //region Print Functions
     void AJANAgent::PrintState(const State &state, ostream &out) const {
@@ -821,6 +824,72 @@ namespace despot {
         return terminal;
     }
 
+    Belief *AJANAgent::Tau(const Belief *belief, ACT_TYPE action, OBS_TYPE obs) const {
+        static vector<double> probs = vector<double>(NumStates());
+
+        const vector<State*>& particles = static_cast<const ParticleBelief*>(belief)->particles();
+
+        double sum = 0;
+        for (int i = 0; i < particles.size(); i++) {
+            AJANAgentState* state = static_cast<AJANAgentState*>(particles[i]);
+            const vector<State>& distribution= transition_probabilities_[GetIndex(state)][action];
+            for (int j = 0; j < distribution.size(); j++) {
+                const State& next = distribution[j];
+                double p = state->weight * next.weight
+                        * ObsProb(obs, *(states_[next.state_id]), action);
+                probs[next.state_id] +=p;
+                sum +=p;
+            }
+        }
+        vector <State*> new_particles;
+        for (int i = 0; i < NumStates(); i++) {
+            if(probs[i]>0){
+                State* new_particle = Copy(states_[i]);
+                new_particle->weight = probs[i]/sum;
+                new_particles.push_back(new_particle);
+                probs[i] = 0;
+            }
+        }
+        return new ParticleBelief(new_particles, this, nullptr, false);
+    }
+
+    double AJANAgent::StepReward(const Belief* belief, ACT_TYPE action) const {
+        const vector<State*>& particles =
+                static_cast<const ParticleBelief*>(belief)->particles();
+
+        double sum = 0;
+        for (int i = 0; i < particles.size(); i++) {
+            State* particle = particles[i];
+            AJANAgentState* state = static_cast<AJANAgentState*>(particle);
+            double reward = 0;
+            if (action == TagAction()) {
+                if (rob_[state->state_id] == opp_[state->state_id]) {
+                    reward = TAG_REWARD;
+                } else {
+                    reward = -TAG_REWARD;
+                }
+            } else {
+                reward = -1;
+            }
+            sum += state->weight * reward;
+        }
+
+        return sum;
+    }
+
+    void AJANAgent::Observe(const Belief *belief, ACT_TYPE action, map<OBS_TYPE, double> &obss) const {
+            cerr << "Exit: Two many observations!" << endl;
+            exit(0);
+    }
+
+    const State *AJANAgent::GetMMAP(const vector<State *> &particles) const {
+        Coord rob = MostLikelyRobPosition(particles);
+        Coord opp = MostLikelyOpponentPosition(particles);
+
+        int state_id = RobOppIndicesToStateIndex(floor_.GetIndex(rob),
+                                                 floor_.GetIndex(opp));
+        return states_[state_id];
+    }
 
 
 

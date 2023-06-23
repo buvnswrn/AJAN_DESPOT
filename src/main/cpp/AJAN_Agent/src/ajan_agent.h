@@ -5,6 +5,7 @@
 #ifndef DESPOT_AJAN_AGENT_H
 #define DESPOT_AJAN_AGENT_H
 #include <despot/interface/pomdp.h>
+#include <despot/core/mdp.h>
 #include <despot/util/coord.h>
 #include <despot/util/floor.h>
 
@@ -23,7 +24,7 @@ namespace despot {
         std::string text() const;
     };
 
-    class AJANAgent:public DSPOMDP, public StateIndexer, public StatePolicy {
+    class AJANAgent:public MDP, public StateIndexer, public StatePolicy, public BeliefMDP, public MMAPInferencer {
     private:
         mutable MemoryPool<AJANAgentState> memory_pool_;
     public:
@@ -80,6 +81,16 @@ namespace despot {
         inline const State* GetState(int index) const{
             return states_[index];
         };
+
+        Belief *Tau(const Belief *belief, ACT_TYPE action, OBS_TYPE obs) const ;
+
+        void Observe(const Belief* belief, ACT_TYPE action,
+                     std::map<OBS_TYPE, double>& obss) const ;
+
+        double StepReward(const Belief* belief, ACT_TYPE action) const ;
+
+        const std::vector<State> &TransitionProbability(int s, ACT_TYPE a) const;
+        const State* GetMMAP(const std::vector<State*>& particles) const;
         //region AJAN Methods
         bool
         getAJANStep(AJANAgentState &s, double random_num, ACT_TYPE action, double &reward, OBS_TYPE &obs, const char *methodName,
@@ -165,6 +176,8 @@ namespace despot {
         void NoiseSigma(double noise_sigma);
 
         bool BaseStep(State &state, double aDouble, ACT_TYPE action, double &reward) const;
+
+
     };
 
 }
