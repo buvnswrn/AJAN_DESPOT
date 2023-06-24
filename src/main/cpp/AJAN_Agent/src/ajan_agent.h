@@ -10,11 +10,12 @@
 #include <despot/util/floor.h>
 
 namespace despot {
-
+    const std::string AGENT = "Agent";
     class AJANAgentState:public State {
         public:
             JNIEnv* javaEnv;
             jobject javaStateObject;
+
 //            int agent_position;
             // we can use a map/dict here to store multiple variables; Map<*char,ACT_TYPE>
             AJANAgentState();
@@ -28,8 +29,6 @@ namespace despot {
     private:
         mutable MemoryPool<AJANAgentState> memory_pool_;
     public:
-        JNIEnv* javaEnv;
-        jobject javaAgentObject;
 
         static AJANAgent* current_;
         static double TAG_REWARD;

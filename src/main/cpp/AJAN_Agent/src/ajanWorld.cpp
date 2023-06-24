@@ -4,6 +4,7 @@
 
 #include "AJANWorld.h"
 #include <jni.h>
+#include "jni/ajanHelpers.h"
 namespace despot {
     AJANWorld::AJANWorld() {
         cout << "Initialising default world" << endl;
@@ -18,10 +19,9 @@ namespace despot {
 
 
     bool AJANWorld::Connect() {
-        jclass javaClass = AJANWorld::javaEnv->GetObjectClass(AJANWorld::javaWorldObject);
         cout <<"Connecting to ROS ..." <<endl;
-        jmethodID javaMethod = AJANWorld::javaEnv->GetMethodID(javaClass, "Connect", "()Z");
-        jboolean connected = AJANWorld::javaEnv->CallBooleanMethod(javaWorldObject, javaMethod);
+        jboolean connected = getEnv()->CallBooleanMethod(*getAjanWorldObject(),
+                                                     getMethodID("World","Connect"));
         cout <<"Connected:"<< (connected == JNI_TRUE) <<endl;
         return connected == JNI_TRUE;
     }
@@ -36,11 +36,11 @@ namespace despot {
 
     bool AJANWorld::ExecuteAction(despot::ACT_TYPE action, despot::OBS_TYPE &obs) {
         cout<<"Executing action:"<<action<<endl;
-        jclass javaClass = javaEnv->GetObjectClass(javaWorldObject);
-        jmethodID javaMethod = javaEnv->GetMethodID(javaClass, "ExecuteAction", "(II)Z");
-        jboolean connected = javaEnv->CallBooleanMethod(javaWorldObject, javaMethod, action, obs);
-        javaMethod = javaEnv->GetMethodID(javaClass, "getCurrentObservation", "()I");
-        jint currentObservation = javaEnv->CallIntMethod(javaWorldObject, javaMethod);
+        jboolean connected = getEnv()->CallBooleanMethod(*getAjanWorldObject(),
+                                                     getMethodID("World","ExecuteAction"),
+                                                                                                    action, obs);
+        jint currentObservation = getEnv()->CallIntMethod(*getAjanWorldObject(),
+                                                    getMethodID("World","getCurrentObservation"));
         obs = currentObservation;
         return connected == JNI_TRUE; // true for exit, false for continue
     }

@@ -7,6 +7,7 @@
 #include "AJANParticleUpperBound.h"
 #include "AJANPOMCPPrior.h"
 #include "AJANBelief.h"
+#include "jni/ajanHelpers.h"
 
 #include <despot/util/coord.h>
 #include <despot/core/builtin_lower_bounds.h>
@@ -59,26 +60,11 @@ namespace despot {
             robot_pos_unknown_(false){
         //region base_tag
         current_ = this;
-        istringstream iss(
-                string("mapSize = 5 10\n") + string("#####...##\n")
-                + string("#####...##\n") + string("#####...##\n")
-                + string("...........\n") + string("..........."));
-        Init(iss);
         istringstream iss1(BenchmarkMap());
         Init(iss1);
         //endregion
     }
-    AJANAgent::AJANAgent(JNIEnv * env,jobject* agentObject):
-        noise_sigma_(0.5),
-        unit_size(1.0),
-        robot_pos_unknown_(false) {
-        current_=this;
-        istringstream iss(BenchmarkMap());
-        Init(iss);
-        AJANAgent::javaEnv = env;
-        AJANAgent::javaAgentObject = AJANAgent::javaEnv->NewGlobalRef(*agentObject);
 
-    }
     bool AJANAgent::Step(despot::State &state, double random_num, despot::ACT_TYPE action, double &reward,
                          despot::OBS_TYPE &obs) const {
         Random random(random_num);
@@ -363,69 +349,57 @@ namespace despot {
     // region AJAN-DESPOT Functions
     bool AJANAgent::getAJANStep(despot::AJANAgentState &s, double random_num, despot::ACT_TYPE action, double &reward,
                      despot::OBS_TYPE &obs,const char *methodName, const char *returnType) const{
-        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
-        jmethodID javaMethod = javaEnv->GetMethodID(javaClass, methodName, returnType);
         jobject state = convertToAJANAgentState(s);
-        jboolean stepExecuted = javaEnv->CallBooleanMethod(javaAgentObject, javaMethod,
+        jboolean stepExecuted = getEnv()->CallBooleanMethod(*getAjanAgentObject(),
+                                                            getMethodID(despot::AGENT,methodName),
                                                            state, random_num,action,reward, obs);
         return stepExecuted == JNI_TRUE;
     }
     int AJANAgent::getAJANNum(const char *methodName, const char *returnType) const {
-        jclass javaClass = javaEnv ->GetObjectClass(javaAgentObject);
-        jmethodID javaMethod = javaEnv->GetMethodID(javaClass,methodName,returnType);
-        return javaEnv->CallIntMethod(javaAgentObject,javaMethod);
+        return getEnv()->CallIntMethod(*getAjanAgentObject(), getMethodID(despot::AGENT,methodName));
     }
     double AJANAgent::getAJANObsProb(OBS_TYPE obs, const AJANAgentState &state, ACT_TYPE a) const {
-        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
-        jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"ObsProb","(ILde/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/implementation/AJAN_Agent_State;I)D");
         jobject s = convertToAJANAgentState(state);
-        jdouble obsProb = javaEnv->CallDoubleMethod(javaAgentObject,javaMethod,obs,s,a);
-        return obsProb;
+        return getEnv()->CallDoubleMethod(*getAjanAgentObject(), getMethodID(despot::AGENT,"ObsProb"),obs,s,a);
     }
+
     double AJANAgent::getAJANMaxReward() const {
-        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
-        jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"GetMaxReward","()D");
-        jdouble obsProb = javaEnv->CallDoubleMethod(javaAgentObject,javaMethod);
-        return obsProb;
+        return getEnv()->CallDoubleMethod(*getAjanAgentObject(),
+                                                 getMethodID(despot::AGENT,"GetMaxReward"));
     }
     ValuedAction AJANAgent::getAJANBestAction() const {
-        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
-        jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"GetBestAction","()Lde/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/ValuedAction;");
-        jobject valuedAction = javaEnv->CallObjectMethod(javaAgentObject,javaMethod,10);
-        jclass valuedActionClass = javaEnv->GetObjectClass(valuedAction);
-        jfieldID actionField = javaEnv->GetFieldID(valuedActionClass, "action", "I");
-        jfieldID valueField = javaEnv->GetFieldID(valuedActionClass, "value", "D");
-        jint action = javaEnv->GetIntField(valuedAction, actionField);
-        jdouble value = javaEnv->GetDoubleField(valuedAction, valueField);
+        jobject valuedAction = getEnv()->CallObjectMethod(*getAjanAgentObject(),
+                                                          getMethodID(despot::AGENT,"GetBestAction"),
+                                                          10);
+        jclass valuedActionClass = getEnv()->GetObjectClass(valuedAction);
+        jfieldID actionField = getEnv()->GetFieldID(valuedActionClass, "action", "I");
+        jfieldID valueField = getEnv()->GetFieldID(valuedActionClass, "value", "D");
+        jint action = getEnv()->GetIntField(valuedAction, actionField);
+        jdouble value = getEnv()->GetDoubleField(valuedAction, valueField);
         return ValuedAction(action,value);
     }
     AJANAgentState *AJANAgent::getAJANStartState(std::string type) const {
-        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
-        std::string ty = "testing";
-        jstring typeString = javaEnv->NewStringUTF(ty.c_str());
-        jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"CreateStartState",
-                                        "(Ljava/lang/String;)Lde/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/implementation/AJAN_Agent_State;");
-        jobject valuedAction = javaEnv->CallObjectMethod(javaAgentObject,javaMethod,typeString);
+        jstring typeString = getEnv()->NewStringUTF(type.c_str());
+        jobject valuedAction = getEnv()->CallObjectMethod(*getAjanAgentObject(),
+                                      getMethodID(despot::AGENT,"CreateStartState"),
+                                                                                typeString);
         AJANAgentState *ajanAgentState = getAgentStateFromAJANState(valuedAction, false);
         return ajanAgentState;
     }
 
     std::vector<State *> AJANAgent::getAJANParticles(const State *pState, std::string type) const {
         vector<State*> particles;
-        std::string ty = "testing";
-        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
         jobject state = getAJANStateFromState(pState);
-        jmethodID javaMethod = javaEnv->GetMethodID(javaClass,"getInitialBeliefParticles","(Lde/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/State;Ljava/lang/String;)Ljava/util/Vector;");
-        jobject particleVector = javaEnv->CallObjectMethod(javaAgentObject, javaMethod,state,state,javaEnv->NewStringUTF(ty.c_str()));
+        jobject particleVector = getEnv()->CallObjectMethod(*getAjanAgentObject(),
+                                                           getMethodID(despot::AGENT,"getInitialBeliefParticles")
+                                                           ,state,state,getEnv()->NewStringUTF(type.c_str()));
         cout<<"Fetched vector"<<endl;
-        jclass javaVectorClass = javaEnv->GetObjectClass(particleVector);
-        jmethodID javaVectorSizeMethod = javaEnv->GetMethodID (javaVectorClass, "size", "()I");
-        jmethodID javaVectorGetMethod  = javaEnv->GetMethodID(javaVectorClass, "get",
-                                                              "(I)Ljava/lang/Object;");
-        jint size = javaEnv->CallIntMethod(particleVector,javaVectorSizeMethod);
+        jint size = getEnv()->CallIntMethod(particleVector, getMethodID("Vector","size"));
         cout<<"Got "<<size<<" particles"<<endl;
         for (int i = 0; i < size; ++i) {
-            jobject agentState = javaEnv->CallObjectMethod(particleVector,javaVectorGetMethod,i);
+            jobject agentState = getEnv()->CallObjectMethod(particleVector,
+                                                            getMethodID("Vector","get"),
+                                                                                    i);
             cout<<"Fetching particle "<<i<<endl;
             particles.push_back(getAgentStateFromAJANState(agentState, true));
         }
@@ -434,84 +408,76 @@ namespace despot {
     //endregion
     //region Helpers
     jobject AJANAgent::convertToAJANAgentState(const AJANAgentState &state) const {
-        jclass ajanStateClass = javaEnv ->FindClass("de/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/implementation/AJAN_Agent_State");
-        jobject ajanState = javaEnv->AllocObject(ajanStateClass);
-            jfieldID state_id = javaEnv->GetFieldID(ajanStateClass, "state_id","I");
-            jfieldID scenario_id = javaEnv->GetFieldID(ajanStateClass, "scenario_id","I");
-            jfieldID weight = javaEnv->GetFieldID(ajanStateClass, "weight","D");
-            jfieldID agent_position = javaEnv->GetFieldID(ajanStateClass, "agent_position", "I");
-            javaEnv->SetIntField(ajanState, state_id, state.state_id);
-            javaEnv->SetIntField(ajanState, scenario_id, state.scenario_id);
-            javaEnv->SetDoubleField(ajanState, weight, state.weight);
-//            ajanJavaEnv->SetIntField(ajanState, agent_position, state.agent_position);
-            return ajanState;
+        jclass ajanStateClass = getAjanStateClass();
+        jobject ajanState = getEnv()->AllocObject(ajanStateClass);
+
+        jfieldID state_id = getEnv()->GetFieldID(ajanStateClass, "state_id","I");
+        jfieldID scenario_id = getEnv()->GetFieldID(ajanStateClass, "scenario_id","I");
+        jfieldID weight = getEnv()->GetFieldID(ajanStateClass, "weight","D");
+        jfieldID agent_position = getEnv()->GetFieldID(ajanStateClass, "agent_position", "I");
+
+        getEnv()->SetIntField(ajanState, state_id, state.state_id);
+        getEnv()->SetIntField(ajanState, scenario_id, state.scenario_id);
+        getEnv()->SetDoubleField(ajanState, weight, state.weight);
+        return ajanState;
     }
 
     void AJANAgent::printInJava(const char *methodName,const char *returnType, jobject pJobject) const {
-        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
-        jmethodID javaMethod = javaEnv->GetMethodID(javaClass, methodName, returnType);
-        javaEnv->CallVoidMethod(javaAgentObject, javaMethod, pJobject);
+        getEnv()->CallVoidMethod(*getAjanAgentObject(), getMethodID(despot::AGENT,methodName), pJobject);
     }
     void AJANAgent::printInJava(const char *methodName,const char *returnType, jobject pJobject, const OBS_TYPE obs) const {
-        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
-        jmethodID javaMethod = javaEnv->GetMethodID(javaClass, methodName, returnType);
-        javaEnv->CallVoidMethod(javaAgentObject, javaMethod, pJobject, obs);
+        getEnv()->CallVoidMethod(*getAjanAgentObject(), getMethodID(despot::AGENT,methodName), pJobject, obs);
     }
     void AJANAgent::printInJava(const char *methodName,const char *returnType, ACT_TYPE pJobject) const {
-        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
-        jmethodID javaMethod = javaEnv->GetMethodID(javaClass, methodName, returnType);
-        javaEnv->CallVoidMethod(javaAgentObject, javaMethod, pJobject);
+        getEnv()->CallVoidMethod(*getAjanAgentObject(), getMethodID(despot::AGENT,methodName), pJobject);
     }
 
     void AJANAgent::UpdateValues(AJANAgentState &state, double &reward, OBS_TYPE &obs) const {
-        jclass javaClass = javaEnv->GetObjectClass(javaAgentObject);
-        jfieldID currentStateID = javaEnv->GetStaticFieldID(javaClass, "currentState",
-                                                            "Lde/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/implementation/AJAN_Agent_State;");
-        jobject currentState = javaEnv->GetStaticObjectField(javaClass,currentStateID);
-        jfieldID currentRewardID = javaEnv->GetStaticFieldID(javaClass, "currentReward", "D");
-        jdouble currentReward = javaEnv->GetStaticDoubleField(javaClass, currentRewardID);
-        jfieldID currentObservationID = javaEnv->GetStaticFieldID(javaClass, "currentObservation", "I");
-        jint currentObservation = javaEnv->GetStaticIntField(javaClass,currentObservationID);
+        jfieldID currentStateID = getEnv()->GetStaticFieldID(getAjanAgentClass(), "currentState",
+                        ("Lde/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/implementation/AJAN_Agent_State"));
+        jobject currentState = getEnv()->GetStaticObjectField(getAjanAgentClass(),currentStateID);
+        jfieldID currentRewardID = getEnv()->GetStaticFieldID(getAjanAgentClass(), "currentReward", "D");
+        jdouble currentReward = getEnv()->GetStaticDoubleField(getAjanAgentClass(), currentRewardID);
+        jfieldID currentObservationID = getEnv()->GetStaticFieldID(getAjanAgentClass(), "currentObservation", "I");
+        jint currentObservation = getEnv()->GetStaticIntField(getAjanAgentClass(),currentObservationID);
         reward = currentReward;
         obs = currentObservation;
         UpdateStateValues(state,currentState);
     }
 
     void AJANAgent::UpdateStateValues(AJANAgentState &ajanAgentState, jobject pJobject) const {
-        jclass javaClass = javaEnv->GetObjectClass(pJobject);
-        jfieldID ajanAgentStateID = javaEnv->GetFieldID(javaClass,"agent_position","I");
-        jint ajanAgentPosition = javaEnv->GetIntField(pJobject,ajanAgentStateID);
-//        ajanAgentState.agent_position = ajanAgentPosition;
+        jclass javaClass = getEnv()->GetObjectClass(pJobject); // TODO: have to change these if possible
+        jfieldID ajanAgentStateID = getEnv()->GetFieldID(javaClass,"agent_position","I");
+        jint ajanAgentPosition = getEnv()->GetIntField(pJobject,ajanAgentStateID);
     }
     jobject AJANAgent::getAJANStateFromState(const State *state) const{
-        jclass ajanStateClass = javaEnv ->FindClass("de/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/implementation/AJAN_Agent_State");
-        jobject ajanState = javaEnv->AllocObject(ajanStateClass);
-        jfieldID state_id = javaEnv->GetFieldID(ajanStateClass, "state_id","I");
-        jfieldID scenario_id = javaEnv->GetFieldID(ajanStateClass, "scenario_id","I");
-        jfieldID weight = javaEnv->GetFieldID(ajanStateClass, "weight","D");
-        javaEnv->SetIntField(ajanState, state_id, state->state_id);
-        javaEnv->SetIntField(ajanState, scenario_id, state->scenario_id);
-        javaEnv->SetDoubleField(ajanState, weight, state->weight);
+        jclass ajanStateClass = getEnv() ->FindClass("de/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/implementation/AJAN_Agent_State");
+        jobject ajanState = getEnv()->AllocObject(ajanStateClass);
+        jfieldID state_id = getEnv()->GetFieldID(ajanStateClass, "state_id","I");
+        jfieldID scenario_id = getEnv()->GetFieldID(ajanStateClass, "scenario_id","I");
+        jfieldID weight = getEnv()->GetFieldID(ajanStateClass, "weight","D");
+        getEnv()->SetIntField(ajanState, state_id, state->state_id);
+        getEnv()->SetIntField(ajanState, scenario_id, state->scenario_id);
+        getEnv()->SetDoubleField(ajanState, weight, state->weight);
         return ajanState;
     }
     AJANAgentState *AJANAgent::getAgentStateFromAJANState(jobject valuedAction, bool needAllocation) const {
-        jclass valuedActionClass = javaEnv->GetObjectClass(valuedAction);
-        jfieldID weightField = javaEnv->GetFieldID(valuedActionClass, "weight", "D");
-        jfieldID stateField = javaEnv->GetFieldID(valuedActionClass, "state_id", "I");
-        jfieldID scenarioField = javaEnv->GetFieldID(valuedActionClass, "scenario_id", "I");
-        jfieldID agentPositionField = javaEnv->GetFieldID(valuedActionClass, "agent_position", "I");
+        jclass valuedActionClass = getEnv()->GetObjectClass(valuedAction);
+        jfieldID weightField = getEnv()->GetFieldID(valuedActionClass, "weight", "D");
+        jfieldID stateField = getEnv()->GetFieldID(valuedActionClass, "state_id", "I");
+        jfieldID scenarioField = getEnv()->GetFieldID(valuedActionClass, "scenario_id", "I");
+        jfieldID agentPositionField = getEnv()->GetFieldID(valuedActionClass, "agent_position", "I");
         AJANAgentState *ajanAgentState;
         if (needAllocation){
-            ajanAgentState = static_cast<AJANAgentState *>(Allocate(javaEnv->GetIntField(valuedAction, stateField),
-                                                                     javaEnv->GetDoubleField(valuedAction,
+            ajanAgentState = static_cast<AJANAgentState *>(Allocate(getEnv()->GetIntField(valuedAction, stateField),
+                                                                     getEnv()->GetDoubleField(valuedAction,
                                                                                              weightField)));
         } else {
             ajanAgentState = new AJANAgentState();
-            ajanAgentState->weight = javaEnv->GetDoubleField(valuedAction, weightField);
-            ajanAgentState->state_id = javaEnv->GetIntField(valuedAction, stateField);
+            ajanAgentState->weight = getEnv()->GetDoubleField(valuedAction, weightField);
+            ajanAgentState->state_id = getEnv()->GetIntField(valuedAction, stateField);
         }
-//        ajanAgentState->agent_position = ajanJavaEnv->GetIntField(valuedAction, agentPositionField);
-        ajanAgentState->scenario_id = javaEnv->GetIntField(valuedAction, scenarioField);
+        ajanAgentState->scenario_id = getEnv()->GetIntField(valuedAction, scenarioField);
         return ajanAgentState;
     }
 

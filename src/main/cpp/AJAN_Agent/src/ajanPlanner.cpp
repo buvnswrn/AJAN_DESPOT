@@ -13,27 +13,17 @@ using namespace despot;
 
 class AJANPlanner: public Planner {
 public:
-    JNIEnv* javaEnv;
-    jobject javaPlannerObject;
-    jobject* javaAgentObject;
-    jobject*  javaWorldObject;
     //endregion
-    AJANPlanner(JNIEnv *& env, jobject thisObject,jobject * agentObject, jobject * worldObject){
-        AJANPlanner::javaEnv = env;
-        AJANPlanner::javaPlannerObject = thisObject;
-        AJANPlanner::javaAgentObject = agentObject;
-        AJANPlanner::javaWorldObject = worldObject;
-        jclass javaClass = AJANPlanner::javaEnv->GetObjectClass(thisObject);
+    AJANPlanner(){
         cout<<"atemmpting to connect to world"<<endl;
         cout<<"got world"<<endl;
-        jmethodID javaMethod = AJANPlanner::javaEnv->GetMethodID(javaClass,"PrintMethod","()V");
-        AJANPlanner::javaEnv->CallVoidMethod(thisObject,javaMethod);
+        getEnv()->CallVoidMethod(*getAjanPlannerObject(), getMethodID("Planner","PrintMethod"));
         return;
     }
 
     DSPOMDP* InitializeModel(option::Option* options) override {
         // Initialize POMDP Model here;
-        DSPOMDP* model = new AJANAgent(AJANPlanner::javaEnv,AJANPlanner::javaAgentObject);
+        DSPOMDP* model = new AJANAgent();
         //Error from here
         return model;
     }
@@ -46,7 +36,7 @@ public:
             return InitializePOMDPWorld(world_type, model, options);
         } else {
             cout<<"Create a world as defined and implemented by the user"<<endl;
-            AJANWorld* world = new AJANWorld(AJANPlanner::javaEnv, AJANPlanner::javaWorldObject);
+            AJANWorld* world = new AJANWorld();
             cout<<"Establish connection with external system"<<endl;
             world->Connect();
             cout<<"Initialize the state of the external system"<<endl;
@@ -127,7 +117,7 @@ public:
     // region Helper Functions
     std::string getJstring(const char *methodName, const char *returnType) {
         jstring solverName = (jstring) getEnv()->CallObjectMethod(*getAjanPlannerObject(), getMethodID("Planner",methodName));
-        return javaEnv ->GetStringUTFChars(solverName, nullptr);
+        return getEnv() ->GetStringUTFChars(solverName, nullptr);
     }
 
     //endregion
@@ -140,7 +130,7 @@ JNIEXPORT jint JNICALL Java_de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_
     std::cout<<"Starting the DESPOT planner"<<std::endl;
     Init(Env, &thisObject, &agentObject, &worldObject);
     getEnv()->CallVoidMethod(*getAjanPlannerObject(), getMethodID("Planner","PrintMethod"));
-    return AJANPlanner(Env, thisObject,&agentObject, &worldObject).RunEvaluation(1,argv);
+    return AJANPlanner().RunEvaluation(1,argv);
 }
 
 JNIEXPORT void JNICALL Java_de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_AJANPlanner_InitializePlannerInDespot
