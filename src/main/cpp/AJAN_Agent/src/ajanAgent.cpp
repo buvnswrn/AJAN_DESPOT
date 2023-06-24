@@ -151,7 +151,7 @@ namespace despot {
         cout<<"CreateStartStateEnd"<<endl;
         return new AJANAgentState(*states_[n]);
         //FIXME: Don't make Java calls for now
-//        return getAJANStartState(type);
+        return getAJANStartState(type);
     }
 
     Belief *AJANAgent::InitialBelief(const State *start, std::string type) const {
@@ -443,7 +443,7 @@ namespace despot {
             javaEnv->SetIntField(ajanState, state_id, state.state_id);
             javaEnv->SetIntField(ajanState, scenario_id, state.scenario_id);
             javaEnv->SetDoubleField(ajanState, weight, state.weight);
-//            javaEnv->SetIntField(ajanState, agent_position, state.agent_position);
+//            ajanJavaEnv->SetIntField(ajanState, agent_position, state.agent_position);
             return ajanState;
     }
 
@@ -510,7 +510,7 @@ namespace despot {
             ajanAgentState->weight = javaEnv->GetDoubleField(valuedAction, weightField);
             ajanAgentState->state_id = javaEnv->GetIntField(valuedAction, stateField);
         }
-//        ajanAgentState->agent_position = javaEnv->GetIntField(valuedAction, agentPositionField);
+//        ajanAgentState->agent_position = ajanJavaEnv->GetIntField(valuedAction, agentPositionField);
         ajanAgentState->scenario_id = javaEnv->GetIntField(valuedAction, scenarioField);
         return ajanAgentState;
     }

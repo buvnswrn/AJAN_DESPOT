@@ -39,15 +39,17 @@ AJANPlanner:
 	#mvn dependency:copy-dependencies
 	mkdir -p ${OUT_DIR} ${MY_JNI_HEADERS} ${AJAN}
 	javac -cp ${COMMONS_JAR}:${JSON_JAR}:${OTHER_JARS} -h ${MY_JNI_HEADERS} -d ${OUT_DIR} ${AJAN_POMDP_FILES} ${AJAN_POMDP_IMPL_FILES}
+	g++ -std=c++17 -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} -I${DESPOT} ${AJAN_Agent}/jni/ajanHelpers.cpp -o ${OUT_DIR}/ajanHelpers.o
 	g++ -std=c++17 -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} -I${DESPOT} ${AJAN_Agent}/ajanAgent.cpp -o ${OUT_DIR}/ajanAgent.o
 	g++ -std=c++17 -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} -I${DESPOT} ${AJAN_Agent}/ajanPlanner.cpp -o ${OUT_DIR}/ajanPlanner.o
+	g++ -std=c++17 -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} -I${DESPOT} ${AJAN_Agent}/AJANBelief.cpp -o ${OUT_DIR}/ajanBelief.o
 	g++ -std=c++17 -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} -I${DESPOT} ${AJAN_Agent}/AJANParticleUpperBound.cpp -o ${OUT_DIR}/AJANParticleUpperBound.o
 	g++ -std=c++17 -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} -I${DESPOT} ${AJAN_Agent}/AJANPOMCPPrior.cpp -o ${OUT_DIR}/AJANPOMCPPrior.o
 	g++ -std=c++17 -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} -I${DESPOT} ${AJAN_Agent}/AjanPolicy.cpp -o ${OUT_DIR}/AjanPolicy.o
 	g++ -std=c++17 -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${MY_JNI_HEADERS} -I${DESPOT} ${AJAN_Agent}/ajanWorld.cpp -o ${OUT_DIR}/ajanWorld.o
 	#g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux -I${DESPOT_SRC} -I${DESPOT_CORE} -I${DESPOT_INTERFACE} -I${DESPOT_POMDPX} -I${DESPOT_SOLVER} -I${DESPOT_UTIL} -I${DESPOT_UTIL_TINYXML} -I${MY_JNI_HEADERS} ${CPP_FOLDER}/TigerState.cpp -o ${OUT_DIR}/tigerState.o
 	#g++ -shared -fPIC -o ${OUT_DIR}/libtemperaturesampler.so ${OUT_DIR}/temperatureSampler.o ${OUT_DIR}/tigerState.o -lc
-	g++ -std=c++17 -shared -fPIC  ${DESPOT}/*.o ${OUT_DIR}/ajanAgent.o  ${OUT_DIR}/ajanPlanner.o ${OUT_DIR}/AJANParticleUpperBound.o ${OUT_DIR}/AJANPOMCPPrior.o ${OUT_DIR}/AjanPolicy.o  ${OUT_DIR}/ajanWorld.o -o ${OUT_DIR}/libajanplanner.so -lc
+	g++ -std=c++17 -shared -fPIC  ${DESPOT}/*.o ${OUT_DIR}/ajanHelpers.o ${OUT_DIR}/ajanAgent.o  ${OUT_DIR}/ajanPlanner.o ${OUT_DIR}/ajanBelief.o ${OUT_DIR}/AJANParticleUpperBound.o ${OUT_DIR}/AJANPOMCPPrior.o ${OUT_DIR}/AjanPolicy.o  ${OUT_DIR}/ajanWorld.o -o ${OUT_DIR}/libajanplanner.so -lc
 
 run_temperaturesampler: temperaturesampler1
 	java -cp ${OUT_DIR} -Djava.library.path=${OUT_DIR} com.jni.example.TemperatureSampler
