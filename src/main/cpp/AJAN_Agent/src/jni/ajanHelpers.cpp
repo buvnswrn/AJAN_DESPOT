@@ -21,6 +21,7 @@ void Init(JNIEnv *& env, jobject* plannerObject, jobject * agentObject, jobject 
     worldClass = ajanJavaEnv->GetObjectClass(*worldObject);
 
     vectorClass = ajanJavaEnv->FindClass(getSig(VECTOR).c_str());
+    stateClass = ajanJavaEnv->FindClass(getSig(AJAN_AGENT_STATE).c_str());
     cout<<"Initializing the Java methods"<<std::endl;
     GetAllMethodID();
 }
@@ -79,7 +80,7 @@ void GetAllAgentMethodID() {
             {"CreateStartState","("+ getSig(STRING)+")"+ getSig(AJAN_AGENT_STATE)},
             {"getInitialBeliefParticles","("+ getSig(STATE)+ getSig(STRING)+")"+ getSig(VECTOR)},
             {"GetMaxReward","()D"},
-            {"GetBestAction","("+ getSig(ValuedAction)+")"},
+            {"GetBestAction","()"+ getSig(ValuedAction)},
             {"PrintState","("+ getSig(STATE)+")V"},
             {"PrintObs","("+ getSig(STATE)+"I)V"},
             {"PrintAction","(I)V"},
@@ -131,7 +132,21 @@ jobject* getAjanWorldObject(){
     return ajanJavaWorldObject;
 }
 
+jclass getAjanStateClass(){
+    return stateClass;
+}
+jclass getAjanPlannerClass(){
+    return plannerClass;
+}
+jclass getAjanWorldClass(){
+    return worldClass;
+}
+jclass getAjanAgentClass(){
+    return agentClass;
+}
+
 jmethodID getMethodID(string clazz,string methodName){
+//    cout<<"Calling "<<methodName<<" for "<<clazz<<endl;
     if(clazz == "Agent"){
         return agentMethods[methodName];
     } else if(clazz=="Planner"){

@@ -22,6 +22,7 @@ static jclass plannerClass;
 static jclass agentClass;
 static jclass worldClass;
 static jclass vectorClass;
+static jclass stateClass;
 //endregion
 
 //region Map to store all the methodIDS
@@ -41,9 +42,16 @@ void GetAllVectorMethodID();
 jmethodID getMethodID(string clazz,string methodName);
 
 JNIEnv * getEnv();
+
+jclass getAjanStateClass();
+jclass getAjanPlannerClass();
+jclass getAjanAgentClass();
+jclass getAjanWorldClass();
+
 jobject* getAjanPlannerObject();
 jobject* getAjanAgentObject();
 jobject* getAjanWorldObject();
 jobject* getJavaVectorObject();
 void populateMethodIds(string methodNames[][2],int totalMethod, jclass classReference);
+
 #endif //POMDP_AJANHELPERS_H
