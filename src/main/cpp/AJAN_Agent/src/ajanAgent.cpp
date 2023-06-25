@@ -104,9 +104,7 @@ namespace despot {
     }
 
     int AJANAgent::NumActions() const{
-        return 5;
-        //FIXME: Don't make Java calls for now
-//        return getAJANNum("NumActions", "()I");;
+        return getAJANNum("NumActions", "()I");
     }
 
     int AJANAgent::NumStates() const {
@@ -499,6 +497,7 @@ namespace despot {
         }
 
         transition_probabilities_.resize(NumStates());
+
         for (int s = 0; s < NumStates(); s++) {
             transition_probabilities_[s].resize(NumActions());
             const map<int, double>& opp_distribution = OppTransitionDistribution(s);

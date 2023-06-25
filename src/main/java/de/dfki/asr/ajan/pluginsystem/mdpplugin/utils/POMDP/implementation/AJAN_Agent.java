@@ -5,9 +5,16 @@ import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.Belief;
 import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.DSPOMDP;
 import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.State;
 import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.ValuedAction;
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.util.Compass;
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.util.Coord;
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.util.Floor;
 
 import java.util.*;
 
+import static com.jni.example.ROSConnector.GetReading;
+import static de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.util.Coord.Add;
+import static de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.util.Coord.Muliply;
+import static java.lang.Math.sqrt;
 
 
 public class AJAN_Agent extends DSPOMDP {
@@ -16,11 +23,19 @@ public class AJAN_Agent extends DSPOMDP {
     public static double currentReward;
     public static int currentObservation;
     public static int currentAction;
+
+    //region Application Specific Variables
     final int LEFT = 0;
     final int RIGHT = 1;
     final int HOVER = 2;
     final double NOISE = 0.15;
+    Floor floor_;
+    Vector<Integer> rob_;
+    Vector<Integer> opp_;
+    int same_loc_obs_;
     HashMap<String,?> variables;
+    private Vector<Vector<Vector<Double>>> reading_distributions;
+    //endregion
 //     private final Logger LOGGER = LoggerFactory.getLogger(AJAN_Agent.class);
 
     public AJAN_Agent() {
@@ -104,15 +119,17 @@ public class AJAN_Agent extends DSPOMDP {
         currentObservation |= observation << (dir * (int)variables.get("BITS_PER_READING"));
     }
 
+
+
     @Override
     public int NumActions() {
         // TODO: KB Implementation
-        return 3;
+        return 5;
     }
     @Override
     public int NumStates() {
         // TODO: KB Implementation
-        return 2; // return floor_.NumCells()* floor_.NumCells();
+        return floor_.NumCells()* floor_.NumCells();
     }
 
     @Override
@@ -124,9 +141,33 @@ public class AJAN_Agent extends DSPOMDP {
     @Override
     public double ObsProb(int obs, AJAN_Agent_State state, int action) {
         // TODO: Implementation needed in Knowledge Graphs - Execute the Observation Probability query here. Out: AgentInfo,reward,obs
-        if(action !=HOVER)
-            return obs == 2 ? 1 : 0;
-        return state.agent_position == obs ? (1-NOISE): NOISE;
+        if(Objects.equals(rob_.get(state.state_id), opp_.get(state.state_id)))
+            return (obs == same_loc_obs_)?0:1;
+        double prod = 1.0;
+        for (int dir = 0; dir < (int) variables.get("NBEAMS"); dir++) {
+            int reading = GetReading(obs, dir);
+            if(reading>= LaserRange(state, dir)/(float) variables.get("unit_size"))
+                return 0;
+            double prob_mass = reading_distributions.get(state.state_id).get(dir).get(reading);
+            prod *= prob_mass;
+        }
+        return prod;
+    }
+
+    private double LaserRange(AJAN_Agent_State state, int dir) {
+        Coord rob = floor_.GetCell(rob_.get(state.state_id));
+        Coord opp = floor_.GetCell(opp_.get(state.state_id));
+        int d = 1;
+        while(true){
+            Coord coord = Add(rob,(Muliply(Compass.DIRECTIONS[dir], d)));
+            if(Objects.equals(floor_.GetIndex(coord),-1) || Objects.equals(coord,opp)){
+                break;
+            }
+            d++;
+        }
+        int x = Compass.DIRECTIONS[dir].x;
+        int y = Compass.DIRECTIONS[dir].y;
+        return d* sqrt(x*x+y*y);
     }
 
     @Override
