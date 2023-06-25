@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include <any>
 
 using namespace std;
 #ifndef POMDP_AJANHELPERS_H
@@ -23,6 +24,8 @@ static jclass agentClass;
 static jclass worldClass;
 static jclass vectorClass;
 static jclass stateClass;
+static jclass coordClass;
+static jclass floorClass;
 //endregion
 
 //region Map to store all the methodIDS
@@ -32,6 +35,7 @@ static map<string, jmethodID> worldMethods;
 static map<string, jmethodID> vectorMethods;
 //endregion
 
+void Init(JNIEnv *& env);
 void Init(JNIEnv *& env, jobject* plannerObject, jobject * agentObject, jobject * worldObject);
 void GetAllMethodID();
 void GetAllPlannerMethodID();
@@ -41,17 +45,22 @@ void GetAllVectorMethodID();
 
 jmethodID getMethodID(string clazz,string methodName);
 
-JNIEnv * getEnv();
+JNIEnv * getEnv() { return ajanJavaEnv; }
 
-jclass getAjanStateClass();
-jclass getAjanPlannerClass();
-jclass getAjanAgentClass();
-jclass getAjanWorldClass();
+jclass getAjanStateClass() { return stateClass; }
+jclass getAjanPlannerClass(){ return plannerClass; }
+jclass getAjanAgentClass() { return agentClass; }
+jclass getAjanWorldClass() { return worldClass; }
+jclass getVectorClass() {return vectorClass; }
+jclass getAjanFloorClass() { return floorClass; }
+jclass getAjanCoordClass() { return coordClass; }
 
-jobject* getAjanPlannerObject();
-jobject* getAjanAgentObject();
-jobject* getAjanWorldObject();
-jobject* getJavaVectorObject();
+jobject* getAjanPlannerObject() { return ajanJavaPlannerObject; }
+jobject* getAjanAgentObject() { return ajanJavaAgentObject; }
+jobject* getAjanWorldObject() { return ajanJavaWorldObject; }
+
 void populateMethodIds(string methodNames[][2],int totalMethod, jclass classReference);
+jobject getJavaObject (jclass clazz, jobject obj, const string& fieldID, const string& returnType, any value);
+any getJavaValue (jclass clazz, jobject obj, const string& fieldID, const string& returnType);
 
 #endif //POMDP_AJANHELPERS_H
