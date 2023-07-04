@@ -6,61 +6,76 @@
 #include <map>
 #include <iostream>
 #include <any>
+#include <despot/interface/pomdp.h>
 
 using namespace std;
 #ifndef POMDP_AJANHELPERS_H
 #define POMDP_AJANHELPERS_H
-static JNIEnv* ajanJavaEnv;
 
-//region AJAN Reference Objects
-static jobject* ajanJavaPlannerObject;
-static jobject* ajanJavaAgentObject;
-static jobject* ajanJavaWorldObject;
-//endregion
+class ajanHelper;
+//void Init(JNIEnv *&env);
+     void Init(JNIEnv *&env, jobject *plannerObject, jobject *agentObject, jobject *worldObject);
 
-//region AJAN Reference Classes
-static jclass plannerClass;
-static jclass agentClass;
-static jclass worldClass;
-static jclass vectorClass;
-static jclass stateClass;
-static jclass coordClass;
-static jclass floorClass;
-//endregion
+     void GetAllMethodID();
 
-//region Map to store all the methodIDS
-static map<string, jmethodID> plannerMethods;
-static map<string, jmethodID> agentMethods;
-static map<string, jmethodID> worldMethods;
-static map<string, jmethodID> vectorMethods;
-//endregion
+     void GetAllPlannerMethodID();
 
-void Init(JNIEnv *& env);
-void Init(JNIEnv *& env, jobject* plannerObject, jobject * agentObject, jobject * worldObject);
-void GetAllMethodID();
-void GetAllPlannerMethodID();
-void GetAllAgentMethodID();
-void GetAllWorldMethodID();
-void GetAllVectorMethodID();
+     void GetAllAgentMethodID();
 
-jmethodID getMethodID(string clazz,string methodName);
+     void GetAllWorldMethodID();
 
-JNIEnv * getEnv() { return ajanJavaEnv; }
+     void GetAllVectorMethodID();
 
-jclass getAjanStateClass() { return stateClass; }
-jclass getAjanPlannerClass(){ return plannerClass; }
-jclass getAjanAgentClass() { return agentClass; }
-jclass getAjanWorldClass() { return worldClass; }
-jclass getVectorClass() {return vectorClass; }
-jclass getAjanFloorClass() { return floorClass; }
-jclass getAjanCoordClass() { return coordClass; }
+     void GetAllAjanPolicyMethodID();
 
-jobject* getAjanPlannerObject() { return ajanJavaPlannerObject; }
-jobject* getAjanAgentObject() { return ajanJavaAgentObject; }
-jobject* getAjanWorldObject() { return ajanJavaWorldObject; }
+     void GetAllParticleUpperBoundMethodID();
 
-void populateMethodIds(string methodNames[][2],int totalMethod, jclass classReference);
-jobject getJavaObject (jclass clazz, jobject obj, const string& fieldID, const string& returnType, any value);
-any getJavaValue (jclass clazz, jobject obj, const string& fieldID, const string& returnType);
+     jmethodID getMethodID(string clazz, string methodName);
 
+     JNIEnv *getEnv();
+
+     jclass getAjanStateClass();
+
+     jclass getAjanPlannerClass();
+
+     jclass getAjanAgentClass();
+
+     jclass getAjanWorldClass();
+
+     jclass getVectorClass();
+
+     jclass getAjanFloorClass();
+
+     jclass getAjanCoordClass();
+
+     jclass getAjanParticleUpperBoundClass();
+
+     jclass getAjanPolicyClass();
+
+     jobject *getAjanPlannerObject();
+
+     jobject *getAjanAgentObject();
+
+     jobject *getAjanWorldObject();
+
+     jobject getAjanParticleUpperBoundObject();
+
+     jobject getAjanPolicyObject();
+
+     void setAjanPolicyObject(jobject policyObject);
+
+     void setAjanParticleUpperBoundObject(jobject particleUpperBound);
+
+     void populateMethodIds(string methodNames[][2], int totalMethod, jclass classReference);
+
+     jobject getJavaObject(JNIEnv * env, jclass clazz, jobject obj, const string &fieldID, const string &returnType, any value);
+
+     any getJavaValue(JNIEnv * env, jclass clazz, jobject obj, const string &fieldID, const string &returnType);
+
+     string getString(jobject result);
+
+     jobject getAjanAgentStateVectorFromStateVector(const vector<despot::State *> &particles);
+
+     string getSig(const string &method);
+//};
 #endif //POMDP_AJANHELPERS_H

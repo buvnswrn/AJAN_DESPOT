@@ -9,8 +9,13 @@ public abstract class State {
         this.weight = weight;
         this.state_id = _state_id;
     }
+    public State(int _state_id) {
+        this.state_id = _state_id;
+    }
 
-    public abstract String text();
+    public static String text(int state_id, double weight) {
+        return null;
+    }
 
     State operator(int state_id, double weight){
         this.state_id = state_id;

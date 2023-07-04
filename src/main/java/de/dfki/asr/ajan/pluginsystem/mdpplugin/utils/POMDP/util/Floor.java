@@ -9,11 +9,11 @@ public class Floor {
 //    static int INVALID;
 //    Vector<Coord> cells_;
 //    native Vector<Double> ComputeDistances(int source);
-    Floor() {
+public Floor() {
         nativeptr = Init();
     }
 
-    Floor(int num_rows_, int num_cols_){
+    public Floor(int num_rows_, int num_cols_){
         nativeptr = Init(num_rows_, num_cols_);
     }
 

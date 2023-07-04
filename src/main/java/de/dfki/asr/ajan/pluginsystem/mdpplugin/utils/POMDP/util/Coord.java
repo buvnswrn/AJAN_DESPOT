@@ -1,10 +1,12 @@
 package de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.util;
 
+import static java.lang.Math.abs;
+
 public class Coord {
     public int x;
     public int y;
 
-    Coord(int _x, int _y) {
+    public Coord(int _x, int _y) {
         x=_x;
         y=_y;
     }
@@ -21,6 +23,9 @@ public class Coord {
         return first;
     }
 
+    public static int ManhattanDistance(Coord c1, Coord c2) {
+        return abs(c1.x - c2.x) + abs(c1.y - c2.y);
+    };
 }
 
 

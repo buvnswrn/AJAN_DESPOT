@@ -2,6 +2,8 @@ package de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP;
 
 
 
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.implementation.AJANParticleUpperBound;
+import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.implementation.AJANPolicy;
 import de.dfki.asr.ajan.pluginsystem.mdpplugin.utils.POMDP.implementation.AJAN_Agent_State;
 
 import java.util.Vector;
@@ -23,6 +25,8 @@ public abstract class DSPOMDP {
 
     public abstract ValuedAction GetBestAction();
 
+    protected abstract int GetAction(State state);
+
     public abstract void PrintState(State state);
 
     public abstract void PrintObs(State state, int obs);
@@ -31,7 +35,15 @@ public abstract class DSPOMDP {
 
     public abstract void PrintBelief(Belief belief);
 
-    public abstract String CreateScenarioLowerBound(String name, String particle_bound_name);
+    public abstract AJANPolicy CreateScenarioLowerBound(String name, String particle_bound_name);
+
+    public abstract String CreateScenarioUpperBound(String name, String particle_bound_name);
+
+    public abstract AJANParticleUpperBound CreateParticleUpperBound(String name);
+
+    public abstract String CreateParticleLowerBound(String name);
+
+    public abstract String CreatePOMCPPrior(String name);
 
 //    public abstract State Copy(State state);
 //    public abstract int NumActiveParticles();

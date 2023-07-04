@@ -1,11 +1,11 @@
 //
 // Created by bhuvanesh on 19.06.23.
 //
-
-#ifndef POMDP_AJANPOMCPPRIOR_H
-#define POMDP_AJANPOMCPPRIOR_H
 #include "ajan_agent.h"
 #include <despot/solver/pomcp.h>
+#ifndef POMDP_AJANPOMCPPRIOR_H
+#define POMDP_AJANPOMCPPRIOR_H
+
 
 namespace despot {
     class AJANPOMCPPrior:public POMCPPrior {

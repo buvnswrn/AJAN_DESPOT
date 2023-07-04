@@ -2,12 +2,13 @@
 // Created by bhuvanesh on 25.05.23.
 //
 #include <jni.h>
-#ifndef DESPOT_AJAN_AGENT_H
-#define DESPOT_AJAN_AGENT_H
 #include <despot/interface/pomdp.h>
 #include <despot/core/mdp.h>
 #include <despot/util/coord.h>
 #include <despot/util/floor.h>
+#include "de_dfki_asr_ajan_pluginsystem_mdpplugin_utils_POMDP_implementation_AJAN_Agent.h"
+#ifndef DESPOT_AJAN_AGENT_H
+#define DESPOT_AJAN_AGENT_H
 
 namespace despot {
     const std::string AGENT = "Agent";
@@ -30,14 +31,23 @@ namespace despot {
         mutable MemoryPool<AJANAgentState> memory_pool_;
     public:
 
-        static AJANAgent* current_;
-        static double TAG_REWARD;
-        Floor floor_;
-        bool robot_pos_unknown_;
-        std::vector<AJANAgentState*> states_;
-        std::vector<int> rob_;
-        std::vector<int> opp_;
-        std::vector<std::vector<std::vector<State>>> transition_probabilities_;
+//        static AJANAgent* current_;
+//        static double TAG_REWARD;
+//        Floor floor_;
+//        bool robot_pos_unknown_;
+//        std::vector<AJANAgentState*> states_;
+//        std::vector<int> rob_;
+//        std::vector<int> opp_;
+//        std::vector<std::vector<std::vector<State>>> transition_probabilities_;
+//        std::vector<State> tempStateVector;
+//        static int NBEAMS;
+
+//        static int BITS_PER_READING;
+        uint64_t same_loc_obs_;
+//        std::vector<std::vector<std::vector<double>>> reading_distributions_;
+
+//        double unit_size;
+//        double noise_sigma_;
 
         AJANAgent();
         AJANAgent(JNIEnv* javaEnv, jobject* javaAgentObject);
@@ -59,7 +69,7 @@ namespace despot {
                                                      std::string particle_bound_name="DEFAULT") const;
         ParticleUpperBound* CreateParticleUpperBound(std::string name) const;
 
-        POMCPPrior* CreatePOMCPPrior(std::string name = "DEFAULT") const;
+//        POMCPPrior* CreatePOMCPPrior(std::string name = "DEFAULT") const;
         //endregion
         //region Print Functions
         void PrintState(const State& state, std::ostream& out = std::cout) const;
@@ -77,9 +87,11 @@ namespace despot {
             return state->state_id;
         };
 
-        inline const State* GetState(int index) const{
-            return states_[index];
-        };
+        const State* GetState(int index) const;
+//        {
+
+//            return states_[index];
+//        };
 
         Belief *Tau(const Belief *belief, ACT_TYPE action, OBS_TYPE obs) const ;
 
@@ -113,70 +125,74 @@ namespace despot {
 
         double getAJANMaxReward() const;
 
-        ValuedAction getAJANBestAction() const;
+//        ValuedAction getAJANBestAction() const;
 
         AJANAgentState *getAJANStartState(std::string type) const;
 
         std::vector<State *> getAJANParticles(const State *pState, std::string type) const;
 
-        jobject getAJANStateFromState(const State *state) const;
+        jobject getAJANStateFromState(const State *state) const ;
 
         AJANAgentState *getAgentStateFromAJANState(jobject valuedAction, bool needAllocation) const;
         //endregion
         // region helper methods
-        int StateIndexToRobIndex(int i) const;
-
-        int StateIndexToOppIndex(int index) const;
-
-        Coord GetRobPos(const State *state) const;
-
-        void Init(std::istream& iss);
-
-        void ReadConfig(std::istream& is);
-
-        int RobOppIndicesToStateIndex(int rob, int opp) const;
-
-        std::map<int, double> OppTransitionDistribution(int s);
-
-        int NextRobPosition(int i, int i1, int a) const;
-        std::string RandomMap(int height, int width, int obstacles);
-
-        int TagAction() const;
-
-        static int NBEAMS;
-
-        static int BITS_PER_READING;
-
-        void SetReading(uint64_t obs, uint64_t reading, uint64_t dir) const;
-
-        uint64_t same_loc_obs_;
-        std::vector<std::vector<std::vector<double>>> reading_distributions_;
-
-        double unit_size;
-        double noise_sigma_;
-
-        std::string BenchmarkMap();
-
-        double LaserRange(const State &state, int dir) const;
-
-        int GetReading(uint64_t obs, int dir) const;
+//        int StateIndexToRobIndex(int i) const;
+//
+//        int StateIndexToOppIndex(int index) const;
+//
+//        Coord GetRobPos(const State *state) const;
+//
+//        void Init(std::istream& iss);
+//
+//        void ReadConfig(std::istream& is);
+//
+//        int RobOppIndicesToStateIndex(int rob, int opp) const;
+//
+//        std::map<int, double> OppTransitionDistribution(int s);
+//
+//        int NextRobPosition(int i, int i1, int a) const;
+//        std::string RandomMap(int height, int width, int obstacles);
+//
+//        int TagAction() const;
+//
+//
+//
+//        void SetReading(uint64_t obs, uint64_t reading, uint64_t dir) const;
+//
+//
+//
+//        std::string BenchmarkMap();
+//
+//        double LaserRange(const State &state, int dir) const;
+//
+//        int GetReading(uint64_t obs, int dir) const;
 
         mutable std::vector<int> default_action_;
 
         void ComputeDefaultActions(std::string type) const;
 
-        const Floor floor() const;
+//        const Floor floor() const;
+//
+//        Coord MostLikelyRobPosition(const std::vector<State *> &vector) const;
+//
+//        Coord MostLikelyOpponentPosition(const std::vector<State *> &particles) const;
+//        //endregion
+//
+//        void NoiseSigma(double noise_sigma);
+//
+//        bool BaseStep(State &state, double aDouble, ACT_TYPE action, double &reward) const;
 
-        Coord MostLikelyRobPosition(const std::vector<State *> &vector) const;
 
-        Coord MostLikelyOpponentPosition(const std::vector<State *> &particles) const;
-        //endregion
+        const std::vector<State> &getStateVectorFromAJANStateVector(jobject transProb) const;
 
-        void NoiseSigma(double noise_sigma);
+        jobject getUpdatedCurrentAJANState(State state) const;
 
-        bool BaseStep(State &state, double aDouble, ACT_TYPE action, double &reward) const;
+        jobject getAjanAgentStateVectorFromStateVector(const std::vector<State *> &vector) const;
 
+        std::vector<State *> getStatePointerVectorFromAJANStateVector(jobject transProb) const;
 
+//        void convertAJANStateToState(jobject transProb, jmethodID getMethod, int i, State *cstate) const;
+        ValuedAction getAJANBestAction() const;
     };
 
 }

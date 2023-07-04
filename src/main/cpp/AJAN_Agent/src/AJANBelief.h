@@ -1,11 +1,11 @@
 //
 // Created by bhuvanesh on 22.06.23.
 //
-
-#ifndef POMDP_AJANBELIEF_H
-#define POMDP_AJANBELIEF_H
 #include "ajan_agent.h"
 #include <despot/core/particle_belief.h>
+#ifndef POMDP_AJANBELIEF_H
+#define POMDP_AJANBELIEF_H
+
 
 //using namespace std;
 

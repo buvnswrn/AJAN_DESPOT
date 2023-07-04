@@ -1,10 +1,10 @@
 //
 // Created by bhuvanesh on 19.06.23.
 //
-#ifndef POMDP_AJANPOLICY_H
-#define POMDP_AJANPOLICY_H
 #include <despot/util/floor.h>
 #include "ajan_agent.h"
+#ifndef POMDP_AJANPOLICY_H
+#define POMDP_AJANPOLICY_H
 namespace despot {
     class AjanPolicy: public DefaultPolicy{
     private:

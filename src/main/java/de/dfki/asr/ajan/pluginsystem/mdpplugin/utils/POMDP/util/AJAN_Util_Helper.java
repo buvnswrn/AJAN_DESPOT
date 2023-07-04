@@ -7,5 +7,6 @@ Floor f = new Floor();
 void test() {
 }
 
+public static native double gausscdf(double x, double mean, double sigma);
 
 }

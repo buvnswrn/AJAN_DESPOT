@@ -42,7 +42,7 @@ public:
             cout<<"Initialize the state of the external system"<<endl;
             world->Initialize();
             cout<<"Initialized"<<endl;
-            static_cast<AJANAgent*>(model)->NoiseSigma(world->noise_sigma_);
+//            static_cast<AJANAgent*>(model)->NoiseSigma(world->noise_sigma_);
             cout<<"Assigned Noise sigma"<<endl;
             return world;
         }
