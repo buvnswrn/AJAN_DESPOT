@@ -16,7 +16,7 @@ JNIEXPORT jfloat JNICALL Java_com_jni_example_TemperatureSampler_getTemperature 
 jobject getAJANStateFromState(despot::State& state){
 
 //    int state = getAJANStateFromState();
-    jclass ajanStateClass = globalEnv ->FindClass("com/ajan/POMDP/implementation/AJAN_Agent_State");
+    jclass ajanStateClass = globalEnv ->FindClass("de/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/implementation/AJAN_Agent_State");
     jobject ajanState = globalEnv->AllocObject(ajanStateClass);
     jfieldID state_id = globalEnv->GetFieldID(ajanStateClass, "state_id","I");
     jfieldID scenario_id = globalEnv->GetFieldID(ajanStateClass, "scenario_id","I");
@@ -66,7 +66,7 @@ JNIEXPORT jobject JNICALL Java_com_jni_example_TemperatureSampler_getDetailedTem
     double reward = 100;
     jobject state = getAJANStateFromState(state1);
     jclass javaClass1 = globalEnv->GetObjectClass(thisClassObject);
-    jmethodID javaMethod1 = globalEnv->GetMethodID(javaClass1,"setParams","(IDILcom/ajan/POMDP/implementation/AJAN_Agent_State;)I");
+    jmethodID javaMethod1 = globalEnv->GetMethodID(javaClass1,"setParams","(IDILde/dfki/asr/ajan/pluginsystem/mdpplugin/utils/POMDP/implementation/AJAN_Agent_State;)I");
     const char* str = "Message from c++";
     jstring javaString = globalEnv->NewStringUTF(str);
     ACT_TYPE preferredScale11 = (ACT_TYPE) globalEnv->CallIntMethod(thisClassObject,javaMethod1,temp,reward,obs, state);
