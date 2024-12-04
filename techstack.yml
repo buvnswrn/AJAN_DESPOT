@@ -1,0 +1,231 @@
+repo_name: buvnswrn/AJAN_DESPOT
+report_id: 9fa811c0dafeb8f12f19c86defbf7523
+version: 0.1
+repo_type: Public
+timestamp: '2024-04-07T17:46:39+00:00'
+requested_by: buvnswrn
+provider: github
+branch: master
+detected_tools_count: 18
+tools:
+- name: C lang
+  description: One of the most widely used programming languages of all time
+  website_url: http://en.wikipedia.org/wiki/C_(programming_language)
+  open_source: true
+  hosted_saas: false
+  category: Languages & Frameworks
+  sub_category: Languages
+  image_url: https://img.stackshare.io/no-img-open-source.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT
+  detection_source: Repo Metadata
+- name: C++
+  description: Has imperative, object-oriented and generic programming features, while
+    also providing the facilities for low level memory manipulation
+  website_url: http://www.cplusplus.com/
+  open_source: true
+  hosted_saas: false
+  category: Languages & Frameworks
+  sub_category: Languages
+  image_url: https://img.stackshare.io/service/1049/cplusplus.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT
+  detection_source: Repo Metadata
+- name: Java
+  description: A concurrent, class-based, object-oriented, language specifically designed
+    to have as few implementation dependencies as possible
+  website_url: https://www.java.com
+  open_source: true
+  hosted_saas: false
+  category: Languages & Frameworks
+  sub_category: Languages
+  image_url: https://img.stackshare.io/service/995/K85ZWV2F.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT
+  detection_source: Repo Metadata
+- name: CMake
+  description: An open-source system that manages the build process
+  website_url: http://www.cmake.org/
+  open_source: false
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Java Build Tools
+  image_url: https://img.stackshare.io/service/2424/0UlUI_y1_400x400.jpg
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT
+  detection_source: Repo Metadata
+- name: Git
+  description: Fast, scalable, distributed revision control system
+  website_url: http://git-scm.com/
+  open_source: true
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Version Control System
+  image_url: https://img.stackshare.io/service/1046/git.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT
+  detection_source: Repo Metadata
+- name: JUnit
+  description: A programmer-oriented testing framework for Java
+  website_url: http://junit.org/
+  version: 4.13.2
+  license: EPL-1.0
+  open_source: true
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Testing Frameworks
+  image_url: https://img.stackshare.io/service/2020/874086.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/pom.xml
+  detection_source: pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-05-27 19:49:21.000000000 Z
+- name: SLF4J
+  description: Simple logging facade for Java
+  website_url: http://slf4j.org/
+  open_source: false
+  hosted_saas: false
+  category: Monitoring
+  sub_category: Log Management
+  image_url: https://img.stackshare.io/service/2805/05518ecaa42841e834421e9d6987b04f_400x400.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/pom.xml
+  detection_source: pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-05-27 19:49:21.000000000 Z
+- name: TestNG
+  description: A testing framework inspired from JUnit and NUnit
+  website_url: http://testng.org/doc/
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Build, Test, Deploy
+  sub_category: Testing Frameworks
+  image_url: https://img.stackshare.io/service/8900/no-img-open-source.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/pom.xml
+  detection_source: pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-05-27 19:49:21.000000000 Z
+- name: commons-io:commons-io
+  description: The Apache Commons IO library contains utility classes
+  version: 2.11.0
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: Maven Packages
+  image_url: https://img.stackshare.io/package/maven/image.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/pom.xml
+  detection_source: pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-06-16 14:19:49.000000000 Z
+- name: commons-logging:commons-logging
+  description: Apache Commons Logging is a thin adapter allowing configurable bridging
+    to other
+  version: 1.1.1
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: Maven Packages
+  image_url: https://img.stackshare.io/package/maven/image.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/src/pom.xml
+  detection_source: src/pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-06-16 14:19:49.000000000 Z
+- name: junit:junit
+  description: JUnit is a unit testing framework for Java
+  version: 4.13.2
+  license: EPL-1.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: Maven Packages
+  image_url: https://img.stackshare.io/package/maven/image.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/pom.xml
+  detection_source: pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-06-16 14:19:49.000000000 Z
+- name: net.java.dev.jna:jna-platform
+  description: Java Native Access Platform
+  version: 5.13.0
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: Maven Packages
+  image_url: https://img.stackshare.io/package/maven/image.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/pom.xml
+  detection_source: pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-05-27 19:49:21.000000000 Z
+- name: org.apache.httpcomponents:httpclient
+  description: Apache HttpComponents Client
+  version: 4.5.13
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: Maven Packages
+  image_url: https://img.stackshare.io/package/maven/image.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/pom.xml
+  detection_source: pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-06-16 14:19:49.000000000 Z
+- name: org.apache.httpcomponents:httpcore
+  description: Apache HttpComponents Core
+  version: 4.4.14
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: Maven Packages
+  image_url: https://img.stackshare.io/package/maven/image.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/pom.xml
+  detection_source: pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-06-16 14:19:49.000000000 Z
+- name: org.apache.httpcomponents:httpmime
+  description: Apache HttpComponents HttpClient - MIME coded entities
+  version: 4.5.13
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: Maven Packages
+  image_url: https://img.stackshare.io/package/maven/image.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/src/pom.xml
+  detection_source: src/pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-06-16 14:19:49.000000000 Z
+- name: org.json:json
+  description: JSON is a light-weight, language independent, data interchange format
+  license: JSON
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: Maven Packages
+  image_url: https://img.stackshare.io/package/maven/image.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/pom.xml
+  detection_source: pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-06-16 14:19:49.000000000 Z
+- name: org.slf4j:slf4j-api
+  description: The slf4j API
+  version: 1.7.36
+  license: MIT
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: Maven Packages
+  image_url: https://img.stackshare.io/package/maven/image.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/pom.xml
+  detection_source: pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-06-16 14:19:49.000000000 Z
+- name: org.testng:testng
+  description: Testing framework for Java
+  version: 6.9.10
+  license: Apache-2.0
+  open_source: true
+  hosted_saas: false
+  category: Libraries
+  sub_category: Maven Packages
+  image_url: https://img.stackshare.io/package/maven/image.png
+  detection_source_url: https://github.com/buvnswrn/AJAN_DESPOT/blob/master/pom.xml
+  detection_source: pom.xml
+  last_updated_by: Bhuvaneshwaran I
+  last_updated_on: 2023-06-16 14:19:49.000000000 Z
